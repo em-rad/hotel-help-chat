@@ -14,25 +14,35 @@
 			et nibh venenatis, vel consequat metus porttitor. Nulla facilisi. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc libero lacus, condimentum nec lacinia a, blandit ut lorem.
 		</p>
 		<div class="image-container">
-			<img class="examples" src="../..//public/room1.jpg" />
-			<img class="examples" src="../..//public/room2.jpg" />
-			<img class="examples" src="../..//public/bath.jpg" />
+			<img class="hotel-room-images" src="../..//public/room1.jpg" />
+			<img class="hotel-room-images" src="../..//public/room2.jpg" />
+			<img class="hotel-room-images" src="../..//public/bath.jpg" />
 		</div>
 		<button class="book-now">BOOK NOW</button>
 
-		<button class="open-button" @click="openForm()">Chat</button>
+		<button class="open-button" @click="openForm()"><i class="material-icons">&#xe0b7;</i></button>
 
 		<div class="chat-popup" id="myForm">
 			<form class="form-container">
-				<h3>Customer Service Chat</h3>
+				<button type="button" class="cancel-button" @click="closeForm()">X</button>
+				<h3 class="chat-title">Customer Service Chat</h3>
+				<div class="chats">
+					<div class="message-container">
+						<img src="../../public/bird.png" alt="Avatar" class="ai avatar" />
+						<p class="reply">Hello. How are you today?</p>
+					</div>
 
-				<label for="msg"><b>Message</b></label>
+					<div class="message-container darker">
+						<img src="../../public/bird.png" alt="Avatar" class="user avatar" />
+						<p class="message">Hey! I'm fine. Thanks for asking!</p>
+					</div>
+				</div>
 				<!-- TODO when message is sent, create new element and add child into message div -->
-				<textarea placeholder="Type message..." name="msg" required></textarea>
-				<!-- TODO change message button to be handled by 'Enter' -->
-				<button type="submit" class="btn">Send</button>
-				<!-- TODO change cancel button to X in top right -->
-				<button type="button" class="btn cancel" @click="closeForm()">Close</button>
+				<div class="send-container">
+					<textarea placeholder="Type message..." name="msg" required></textarea>
+					<!-- TODO change message button to be handled by 'Enter' -->
+					<button class="send-button" type="submit">Send</button>
+				</div>
 			</form>
 		</div>
 		<footer></footer>
@@ -95,31 +105,30 @@ p {
 .home {
 	background-image: url('../../public/foggy_birds.png');
 }
+.hotel-room-images {
+	width: 400px;
+	height: 400px;
+	border: 10px solid #957d95;
+}
 .image-container {
 	display: flex;
 	justify-content: space-between;
 	margin: 0 40px 0 40px;
 }
-.examples {
-	width: 400px;
-	height: 400px;
-	border: 10px solid #957d95;
-}
-
+// CHAT BOX CSS
 /* Button used to open the chat form - fixed at the bottom of the page */
 .open-button {
-	background-color: #555;
+	background-color: #40798c;
 	color: white;
 	padding: 16px 20px;
 	border: none;
+	border-radius: 10px;
 	cursor: pointer;
-	opacity: 0.8;
 	position: fixed;
-	bottom: 23px;
-	right: 28px;
-	width: 280px;
+	bottom: 20px;
+	right: 40px;
+	width: 80px;
 }
-
 /* The popup chat - hidden by default */
 .chat-popup {
 	display: none;
@@ -129,51 +138,121 @@ p {
 	border: 3px solid #f1f1f1;
 	z-index: 9;
 }
-
 /* Add styles to the form container */
 .form-container {
-	max-width: 300px;
+	max-width: 450px;
 	padding: 10px;
 	background-color: white;
 }
-
+.chats {
+	height: 350px;
+}
+.send-container {
+	display: flex;
+	align-items: center;
+}
 /* Full-width textarea */
 .form-container textarea {
-	width: 100%;
-	padding: 15px;
-	margin: 5px 0 22px 0;
+	width: 300px;
+	padding: 10px;
+	margin-right: 10px;
 	border: none;
 	background: #f1f1f1;
 	resize: none;
-	min-height: 200px;
+	display: inline;
+	font-size: 12pt;
 }
-
 /* When the textarea gets focus, do something */
 .form-container textarea:focus {
 	background-color: #ddd;
 	outline: none;
 }
-
-/* Set a style for the submit/send button */
-.form-container .btn {
+.cancel-button {
+	background-color: white;
+	position: absolute;
+	display: inline;
+	right: 5px;
+	top: 5px;
+	border: none;
+	outline: none;
+	font-size: 16pt;
+	cursor: pointer;
+}
+.send-button {
 	background-color: #4caf50;
 	color: white;
-	padding: 16px 20px;
+	padding: 10px;
 	border: none;
+	text-align: center;
 	cursor: pointer;
-	width: 100%;
-	margin-bottom: 10px;
+	width: 60px;
 	opacity: 0.8;
+	display: inline;
+}
+.chat-title {
+	display: inline;
+}
+// MESSAGE CSS
+/* Chat containers */
+.message-container {
+	border: 2px solid #dedede;
+	border-radius: 5px;
+	padding: 10px;
+	margin: 10px 0;
+	height: 35px;
+}
+.darker {
+	border-color: #957d959a;
 }
 
-/* Add a red background color to the cancel button */
-.form-container .cancel {
-	background-color: red;
+.message {
+	margin: 0px;
+	padding: 0px;
+	font-size: 12pt;
+	width: 85%;
+	margin-right: 45px;
+	text-align: right;
+}
+.reply {
+	margin: 0px;
+	padding: 0px;
+	font-size: 12pt;
+	width: 85%;
+	margin-left: 45px;
+	text-align: left;
 }
 
-/* Add some hover effects to buttons */
-.form-container .btn:hover,
-.open-button:hover {
-	opacity: 1;
+/* Clear floats */
+.container::after {
+	content: '';
+	clear: both;
+	display: table;
+}
+
+/* Style images */
+.container img {
+	float: left;
+	max-width: 60px;
+	width: 100%;
+	margin-right: 20px;
+	border-radius: 50%;
+}
+
+.ai {
+	float: left;
+	margin-left: 0px;
+	margin-right: 20px;
+}
+.user {
+	float: right;
+	margin-left: 20px;
+	margin-right: 0;
+	transform: scaleX(-1);
+}
+.avatar {
+	padding: 5px;
+	width: 25px;
+	border: 2px solid #40798c;
+	border-radius: 30px;
 }
 </style>
