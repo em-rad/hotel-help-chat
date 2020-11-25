@@ -40,7 +40,7 @@
 				<!-- TODO when message is sent, create new element and add child into message div -->
 				<div class="send-container">
 					<textarea id="msg" placeholder="Type message..." name="msg" v-model="msg" required></textarea>
-					<!-- TODO change message button to also be handled by 'Enter' -->
+					<!-- TODO change message button to be handled by 'Enter' -->
 					<button class="send-button" v-on:click.prevent="sendUserMessage(msg)" type="submit">Send</button>
 				</div>
 			</form>
@@ -52,7 +52,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 //import * as fs from "fs";
-//import Botlang from 'botlang';
+import Botlang from 'botlang';
 
 export default {
 	data(){
@@ -96,7 +96,8 @@ export default {
 		},
 		parseMessage:function (msg:string){
 			// In progress
-			// console.log("Here I am")
+			console.log(Botlang)
+			console.log(new Botlang())
 			// const sourceCode = fs.readFileSync('C:\\Users\\veron\\OneDrive\\Documents\\WMU\\04 Senior Year\\hotel-help-chat\\src\\botlang-script.txt', {
 			// 	encoding : 'utf8',
 			// 	flag     : 'r'
