@@ -96,8 +96,11 @@ export default {
 		},
 		parseMessage:function (msg:string){
 			// In progress
-			console.log(Botlang)
-			console.log(new Botlang())
+			console.log(Botlang);
+			const fileString = '+ "*"\n- "Im not sure I understand you fully."\n- "Please go on."\n- "That is interesting. Please continue."\n- "Tell me more about that."';
+			const bot = new Botlang(fileString);
+			console.log(bot);
+			console.log(bot.reply("Anything"))
 			// const sourceCode = fs.readFileSync('C:\\Users\\veron\\OneDrive\\Documents\\WMU\\04 Senior Year\\hotel-help-chat\\src\\botlang-script.txt', {
 			// 	encoding : 'utf8',
 			// 	flag     : 'r'
