@@ -26,7 +26,7 @@
 			<form class="form-container">
 				<button type="button" class="cancel-button" @click="closeForm()">X</button>
 				<h3 class="chat-title">Customer Service Chat</h3>
-				<div class="chats">
+				<div class="chats" style="overflow: auto">
 					<div class="message-container">
 						<img src="../../public/bird.png" alt="Avatar" class="ai avatar" />
 						<p class="reply">Hello. How are you today?</p>
@@ -39,9 +39,9 @@
 				</div>
 				<!-- TODO when message is sent, create new element and add child into message div -->
 				<div class="send-container">
-					<textarea placeholder="Type message..." name="msg" required></textarea>
+					<textarea id="msg" placeholder="Type message..." name="msg" v-model="msg" required></textarea>
 					<!-- TODO change message button to be handled by 'Enter' -->
-					<button class="send-button" type="submit">Send</button>
+					<button class="send-button" v-on:click.prevent="parseMessage(msg)" type="submit">Send</button>
 				</div>
 			</form>
 		</div>
@@ -53,6 +53,11 @@
 import { Component, Vue } from 'vue-property-decorator';
 
 export default {
+	data(){
+		return{
+			msg:''
+		}	
+	},
 	methods: {
 		openForm() {
 			const form = document.querySelector('#myForm') as HTMLElement;
@@ -62,7 +67,22 @@ export default {
 			const form = document.querySelector('#myForm') as HTMLElement;
 			form.style.display = 'none';
 		},
-	},
+		sendMessage: function(msg:string){
+			const messageBubble = document.querySelector('.chats') as HTMLElement;
+			if(messageBubble){	
+				messageBubble.innerHTML += "<div class='message-container darker'>"
+					+"<img src='/bird.png' alt='Avatar' class='user avatar' />"
+					+"<p class='message'>"+msg+"</p></div>";
+			}
+		},
+		parseMessage:function (msg:string){
+			const textArea = document.querySelector('#msg') as HTMLInputElement;
+			textArea.value = "";
+
+			this.sendMessage(msg);
+		}
+	}
+		
 };
 </script>
 
