@@ -41,7 +41,7 @@
 				<div class="send-container">
 					<textarea id="msg" placeholder="Type message..." name="msg" v-model="msg" required></textarea>
 					<!-- TODO change message button to be handled by 'Enter' -->
-					<button class="send-button" v-on:click.prevent="parseMessage(msg)" type="submit">Send</button>
+					<button class="send-button" v-on:click.prevent="sendUserMessage(msg)" type="submit">Send</button>
 				</div>
 			</form>
 		</div>
@@ -56,7 +56,7 @@ export default {
 	data(){
 		return{
 			msg:''
-		}	
+		}
 	},
 	methods: {
 		openForm() {
@@ -67,22 +67,48 @@ export default {
 			const form = document.querySelector('#myForm') as HTMLElement;
 			form.style.display = 'none';
 		},
-		sendMessage: function(msg:string){
+		sendUserMessage: function(msg:string){
+			// Clear the text area
+			const textArea = document.querySelector('#msg') as HTMLInputElement;
+			textArea.value = "";
+
+			// Send the message bubble into the chat
 			const messageBubble = document.querySelector('.chats') as HTMLElement;
-			if(messageBubble){	
+			if(messageBubble){
 				messageBubble.innerHTML += "<div class='message-container darker'>"
 					+"<img src='/bird.png' alt='Avatar' class='user avatar' />"
 					+"<p class='message'>"+msg+"</p></div>";
 			}
+
+			// Now parse the message to craft a response
+			this.parseMessage(msg)
+		},
+		sendResponseMessage: function(msg:string){
+			// Send the message bubble into the chat
+			const messageBubble = document.querySelector('.chats') as HTMLElement;
+			if(messageBubble){
+				messageBubble.innerHTML += "<div class='message-container'>"
+						+ "<img src='/bird.png' alt='Avatar' class='ai avatar' />"
+						+ "<p class='reply'>" + msg + "</p></div>"
+			}
 		},
 		parseMessage:function (msg:string){
-			const textArea = document.querySelector('#msg') as HTMLInputElement;
-			textArea.value = "";
+			// Work in progress
+			// console.log("Here I am")
+			// const sourceCode = fs.readFileSync('C:\\Users\\veron\\OneDrive\\Documents\\WMU\\04 Senior Year\\hotel-help-chat\\src\\botlang-script.txt', {
+			// 	encoding : 'utf8',
+			// 	flag     : 'r'
+			// }),
+			// bot = new Botlang(sourceCode);
 
-			this.sendMessage(msg);
+			// console.log(
+			// 	bot.reply('user-input')
+			// );
+
+			this.sendResponseMessage(msg);
 		}
 	}
-		
+
 };
 </script>
 
