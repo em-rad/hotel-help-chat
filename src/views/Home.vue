@@ -1,4 +1,5 @@
 <template>
+<!-- Try me: https://stackoverflow.com/questions/48442598/can-we-make-vue-js-application-without-vue-extension-component-and-webpack -->
 	<div class="home">
 		<h1>The Bird Bath</h1>
 		<h2>Hang with the birds</h2>
@@ -29,15 +30,14 @@
 				<div class="chats" style="overflow: auto">
 					<div class="message-container">
 						<img src="../../public/bird.png" alt="Avatar" class="ai avatar" />
-						<p class="reply">Hello. How are you today?</p>
+						<p class="reply">Hi, I'm ChatBot! How can I help you today?</p>
 					</div>
 
-					<div class="message-container darker">
+					<!-- <div class="message-container darker">
 						<img src="../../public/bird.png" alt="Avatar" class="user avatar" />
 						<p class="message">Hey! I'm fine. Thanks for asking!</p>
-					</div>
+					</div> -->
 				</div>
-				<!-- TODO when message is sent, create new element and add child into message div -->
 				<div class="send-container">
 					<textarea id="msg" placeholder="Type message..." name="msg" v-model="msg" required></textarea>
 					<!-- TODO change message button to be handled by 'Enter' -->
@@ -51,11 +51,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+//import * as fs from "fs";
+import Botlang from 'botlang';
 
 export default {
 	data(){
 		return{
-			msg:''
+			msg:'',
+			datesSelectedFlag: false,
+			roomTypeSelectedFlag: false
 		}
 	},
 	methods: {
@@ -93,19 +97,144 @@ export default {
 			}
 		},
 		parseMessage:function (msg:string){
-			// Work in progress
-			// console.log("Here I am")
-			// const sourceCode = fs.readFileSync('C:\\Users\\veron\\OneDrive\\Documents\\WMU\\04 Senior Year\\hotel-help-chat\\src\\botlang-script.txt', {
-			// 	encoding : 'utf8',
-			// 	flag     : 'r'
-			// }),
-			// bot = new Botlang(sourceCode);
+			// Initialize the language bot
+			const bot = this.initBot()
 
-			// console.log(
-			// 	bot.reply('user-input')
-			// );
+			// Get the response and parse it out
+			const botResponse = bot.reply(msg)
+			const msgType = botResponse.split(":")[0]
+			const parsedMessage = botResponse;//botResponse.split(": ")[1] // Uncomment me when new format has been applied to script
 
-			this.sendResponseMessage(msg);
+			// Figure out what to do based on the msgType
+			switch(msgType){
+				case "greeting":
+					// Not sure what we can do with this one - maybe it doesn't need its own category
+					break;
+				case "dateConfirm":
+					// Important!! Do a check or some kind of random function for if there are rooms available for those dates
+					// If dates not available, prompt again
+					// If dates available, send already parsed message and set flag to true
+					break;
+				case "roomTypeConfirm":
+					// Important!! Do a check or some kind of random function for which types of rooms available -
+					// can be all types or nothing, or a combo of which are available and which not
+					break;
+				case "generalConfirm":
+					// Check the flags for which confirm this applies to and return one of the appropriate next steps
+					// If date and room type have been confirmed, send a wrap up message and reset everything
+					// If only date, ask for room type
+					// If none or only room type, ask for date
+					break;
+				case "cancel":
+					// Return an appropriate goodbye message and reset (resetEverything function)
+					break;
+				default: // aka case other
+					// Return the parsed message the bot gave out
+					break;
+			}
+
+			// Send response
+			this.sendResponseMessage(parsedMessage);
+		},
+		resetEverything:function(){
+			this.datesSelectedFlag = false;
+			this.roomTypeSelectedFlag = false;
+		},
+		initBot:function(){
+			// Using a string literal for the script as a last ditch resort
+			const scriptString = '# Botlang Script' + '\n+ "*"' +
+			'\n- "I\'m not sure I understand you fully."' +
+			'\n- "I\'m sorry, I don\'t understand."' +
+			'\n- "Could you rephrase that? I\'m having trouble understanding."' +
+
+			'\n\n+ "Hello?"' +
+			'\n- "greeting: Hi! How can I help you?"' +
+			'\n- "greeting: Hello!"' +
+
+			'\n\n+ "How are you?"' +
+			'\n- "I\'m doing well, thank you!"' +
+			'\n- "I\'m doing well, how about you?"' +
+			'\n- "I\'m doing good, how are you?"' +
+			'\n- "I\'m fantastic! How are you?"' +
+
+			'\n\n+ "Thank you!"' +
+			'\n- "You\'re welcome!"' +
+			'\n- "You\'re very welcome."' +
+			'\n- "Of course! You\'re welcome!"' +
+			'\n- "Anytime, You\'re welcome!"' +
+
+			'\n\n+ "Help"' +
+			'\n- "Alright, tell me how I can help!"' +
+			'\n- "Please let me know how I can help!"' +
+			'\n- "What can I help you with?"' +
+
+			'\n\n+ "* (book|reservation|room) *"' +
+			'\n- "Do you have a date range?"' +
+			'\n- "And what dates are you looking to book?"' +
+			'\n- "Okay! When would your stay be?"' +
+			'\n- "Can I get the dates You\'re looking to book?"' +
+			'\n- "What are the beginning and end dates of your stay?"' +
+			'\n- "Can do! What dates are you looking to book?"' +
+
+			'\n\n+ "* (book|make) reservation"' +
+			'\n- "Can I get the dates of the reservation?"' +
+			'\n- "And what are the dates you are looking to reserve?"' +
+			'\n- "Okay! Can I get the dates of the reservation you\'d like to make?"' +
+			'\n- "Awesome! When are you thinking about booking?"' +
+			'\n- "Ok what dates are you looking to book?"' +
+
+			'\n\n+ "* to *"' +
+			'\n- "I\'m sorry, there are no available rooms for those dates."' +
+			'\n- "I\'m sorry, we\'re all booked those dates."' +
+			'\n- "There are no rooms available for those dates, are there any other datest that will work for you?"' +
+			'\n- "There are no rooms available for those dates, I\'m sorry!"' +
+
+			'\n\n+ "* to *"' +
+			'\n- "We have a one bed, two bed, or the suite available for those days. Which room would you prefer?"' +
+
+			'\n\n+ "* (suite) *"' +
+			'\n- "I\'m sorry, our suite is already booked for those dates."' +
+			'\n- "Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
+			'\n- "Sorry, the suite isn\'t available for those dates, are there any other rooms or dates that work for you?"' +
+
+			'\n\n+ "* (suite)"' +
+			'\n- "I\'m sorry, our suite is already booked for those dates."' +
+			'\n- "Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
+			'\n- "Sorry our suite is not available for those dates, is there another room you\'d like to book for those dates?"' +
+
+			'\n\n# if suite is available' +
+			'\n+ "* (suite) *"' +
+			'\n- "Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
+			'\n- "Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
+			'\n- "The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
+			'\n- "Can do, you\'ll be booked for those dates in the suite, then, at 100€ a night!"' +
+
+			'\n\n+ "* (suite)"' +
+			'\n- "Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
+			'\n- "Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
+			'\n- "The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
+			'\n- "Can do, you\'ll be booked for those dates in the suite, then, at 100€ a night!"' +
+
+			'\n\n# if two bed is available' +
+			'\n+ "* (two bed) *"' +
+			'\n- "Good news! We have a two bed room available for those dates! It\'s 50€ a night and quite comfortable."' +
+			'\n- "Alright, there are two bed rooms available for those dates, lets get you booked! It\'s 50€ a night, is that alright?"' +
+			'\n- "Can do, you\'ll be booked for those dates in a two bed, then, at 100€ a night!"' +
+
+			'\n\n+ "* (two bed)"' +
+			'\n- "Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
+			'\n- "Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
+			'\n- "The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
+			'\n- "Can do, you\'ll be booked for those dates in the suite then at 100€ a night!"' +
+
+			'\n\n# if two bed is not available' +
+			'\n- "* (two bed) * "' +
+			'\n- "Sorry, our two bed rooms are all booked up for those dates."' +
+			'\n- "I\'m sorry, all of our two bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"';
+
+			// Init and return the bot with the script
+			const bot = new Botlang(scriptString);
+			return bot;
 		}
 	}
 
@@ -238,7 +367,7 @@ p {
 .chat-title {
 	display: inline;
 }
-// MESSAGE CSS
+// MESSAGE CSS - make these able to stretch if longer message?
 /* Chat containers */
 .message-container {
 	border: 2px solid #dedede;
