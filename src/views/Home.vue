@@ -103,7 +103,7 @@ export default {
 			// Get the response and parse it out
 			const botResponse = bot.reply(msg)
 			const msgType = botResponse.split(":")[0]
-			const parsedMessage = msg;//botResponse.split(": ")[1] // Uncomment me when new format has been applied to script
+			const parsedMessage = botResponse;//botResponse.split(": ")[1] // Uncomment me when new format has been applied to script
 
 			// Figure out what to do based on the msgType
 			switch(msgType){
