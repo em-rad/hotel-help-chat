@@ -1,5 +1,4 @@
 <template>
-<!-- Try me: https://stackoverflow.com/questions/48442598/can-we-make-vue-js-application-without-vue-extension-component-and-webpack -->
 	<div class="home">
 		<h1>The Bird Bath</h1>
 		<h2>Hang with the birds</h2>
