@@ -102,9 +102,10 @@ export default {
 			const bot = this.initBot();
 			let msgType = '';
 			// Get the response and parse it out
-			let botResponse = bot.reply(msg);
-			if (msg.indexOf(':') > -1) {
+			const botResponse = bot.reply(msg);
+			if (botResponse.indexOf(':') > -1) {
 				msgType = botResponse.split(':')[0];
+				msg = botResponse.split(':')[1];
 			} else {
 				msgType = '';
 			}
@@ -170,13 +171,12 @@ export default {
 					break;
 				case 'cancel':
 					// Return an appropriate goodbye message and reset (resetEverything function)
-					//TODO add cancel into script
 					this.resetEverything();
-					this.sendResponseMessage(parsedMessage);
+					this.sendResponseMessage(msg);
 					break;
 				default:
 					// Return the parsed message the bot gave out
-					this.sendResponseMessage(parsedMessage);
+					this.sendResponseMessage(msg);
 					break;
 			}
 		},
@@ -186,10 +186,6 @@ export default {
 		},
 		initBot: function() {
 			// Using a string literal for the script as a last ditch resort
-			// Book / Make - Room / Reservation > Get date > Get room > confirm
-			// ... > Get date > Get new date > ...
-			// ... > Get room > Get new room > ...
-			// ... > no confirm > ...
 			const scriptString =
 				'# Botlang Script' +
 				'\n+ "*"' +
@@ -265,14 +261,14 @@ export default {
 				'\n+ "xx08"' +
 				'\n- "Sorry, our one bed rooms are all booked up for those dates."' +
 				'\n- "I\'m sorry, all of our one bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"' +
-				'\n\n+ "(goodbye|bye|see ya)"' +
+				'\n\n+ "(goodbye|bye|see ya|cancel|nevermind)"' +
 				'\n- "cancel: Goodbye. Come back soon!"' +
 				'\n- "cancel: Bye now. Have a nice day!"' +
 				'\n- "cancel: Thank you for visiting. Hope we see you soon!"' +
 				'\n\n+ "* (change|switch|swap) room"' +
 				'\n- "What type of room would you like instead?"' +
 				'\n- "Alright, what type of room would you rather have?"' +
-				'\n\n+ "* (change|reschedule) the (date|day)"' +
+				'\n\n+ "* (change|reschedule) the (date|day|dates)"' +
 				'\n- "What days work better for you?"' +
 				'\n- "When would you like to reschedule your reservation?"';
 
