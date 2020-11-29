@@ -142,19 +142,19 @@ export default {
 		initBot:function(){
 			// Using a string literal for the script as a last ditch resort
 			const scriptString = '# Botlang Script' + '\n+ "*"' +
-			'\n- "I\'m not sure I understand you fully."' +
-			'\n- "I\'m sorry, I don\'t understand."' +
-			'\n- "Could you rephrase that? I\'m having trouble understanding."' +
+			'\n- "other: I\'m not sure I understand you fully."' +
+			'\n- "other: I\'m sorry, I don\'t understand."' +
+			'\n- "other: Could you rephrase that? I\'m having trouble understanding."' +
 
 			'\n\n+ "Hello?"' +
 			'\n- "greeting: Hi! How can I help you?"' +
 			'\n- "greeting: Hello!"' +
 
 			'\n\n+ "How are you?"' +
-			'\n- "I\'m doing well, thank you!"' +
-			'\n- "I\'m doing well, how about you?"' +
-			'\n- "I\'m doing good, how are you?"' +
-			'\n- "I\'m fantastic! How are you?"' +
+			'\n- "other: I\'m doing well, thank you!"' +
+			'\n- "other: I\'m doing well, how about you?"' +
+			'\n- "other: I\'m doing good, how are you?"' +
+			'\n- "other: I\'m fantastic! How are you?"' +
 
 			'\n\n+ "Thank you!"' +
 			'\n- "You\'re welcome!"' +
@@ -183,54 +183,67 @@ export default {
 			'\n- "Ok what dates are you looking to book?"' +
 
 			'\n\n+ "* to *"' +
-			'\n- "I\'m sorry, there are no available rooms for those dates."' +
-			'\n- "I\'m sorry, we\'re all booked those dates."' +
-			'\n- "There are no rooms available for those dates, are there any other datest that will work for you?"' +
-			'\n- "There are no rooms available for those dates, I\'m sorry!"' +
+			'\n- "dateConfirm: I\'m sorry, there are no available rooms for those dates."' +
+			'\n- "dateConfirm: I\'m sorry, we\'re all booked those dates."' +
+			'\n- "dateConfirm: There are no rooms available for those dates, are there any other datest that will work for you?"' +
+			'\n- "dateConfirm: There are no rooms available for those dates, I\'m sorry!"' +
 
 			'\n\n+ "* to *"' +
-			'\n- "We have a one bed, two bed, or the suite available for those days. Which room would you prefer?"' +
+			'\n- "dateConfirm: We have a one bed, two bed, or the suite available for those days. Which room would you prefer?"' +
 
 			'\n\n+ "* (suite) *"' +
-			'\n- "I\'m sorry, our suite is already booked for those dates."' +
-			'\n- "Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
-			'\n- "Sorry, the suite isn\'t available for those dates, are there any other rooms or dates that work for you?"' +
+			'\n- "roomTypeConfirm: I\'m sorry, our suite is already booked for those dates."' +
+			'\n- "roomTypeConfirm: Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
+			'\n- "roomTypeConfirm: Sorry, the suite isn\'t available for those dates, are there any other rooms or dates that work for you?"' +
 
 			'\n\n+ "* (suite)"' +
-			'\n- "I\'m sorry, our suite is already booked for those dates."' +
-			'\n- "Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
-			'\n- "Sorry our suite is not available for those dates, is there another room you\'d like to book for those dates?"' +
+			'\n- "roomTypeConfirm: I\'m sorry, our suite is already booked for those dates."' +
+			'\n- "roomTypeConfirm: Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
+			'\n- "roomTypeConfirm: Sorry our suite is not available for those dates, is there another room you\'d like to book for those dates?"' +
 
 			'\n\n# if suite is available' +
 			'\n+ "* (suite) *"' +
-			'\n- "Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
-			'\n- "Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
-			'\n- "The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
-			'\n- "Can do, you\'ll be booked for those dates in the suite, then, at 100€ a night!"' +
+			'\n- "roomTypeConfirm: Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
+			'\n- "roomTypeConfirm: Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
+			'\n- "roomTypeConfirm: The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
+			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in the suite, then, at 100€ a night!"' +
 
 			'\n\n+ "* (suite)"' +
-			'\n- "Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
-			'\n- "Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
-			'\n- "The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
-			'\n- "Can do, you\'ll be booked for those dates in the suite, then, at 100€ a night!"' +
+			'\n- "roomTypeConfirm: Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
+			'\n- "roomTypeConfirm: Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
+			'\n- "roomTypeConfirm: The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
+			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in the suite, then, at 100€ a night!"' +
 
 			'\n\n# if two bed is available' +
 			'\n+ "* (two bed) *"' +
-			'\n- "Good news! We have a two bed room available for those dates! It\'s 50€ a night and quite comfortable."' +
-			'\n- "Alright, there are two bed rooms available for those dates, lets get you booked! It\'s 50€ a night, is that alright?"' +
-			'\n- "Can do, you\'ll be booked for those dates in a two bed, then, at 100€ a night!"' +
+			'\n- "roomTypeConfirm: Good news! We have a two bed room available for those dates! It\'s 50€ a night and quite comfortable."' +
+			'\n- "roomTypeConfirm: Alright, there are two bed rooms available for those dates, lets get you booked! It\'s 50€ a night, is that alright?"' +
+			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in a two bed, then, at 100€ a night!"' +
 
 			'\n\n+ "* (two bed)"' +
-			'\n- "Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
-			'\n- "Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
-			'\n- "The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
-			'\n- "Can do, you\'ll be booked for those dates in the suite then at 100€ a night!"' +
+			'\n- "roomTypeConfirm: Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
+			'\n- "roomTypeConfirm: Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?"' +
+			'\n- "roomTypeConfirm: The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
+			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in the suite then at 100€ a night!"' +
 
 			'\n\n# if two bed is not available' +
-			'\n- "* (two bed) * "' +
-			'\n- "Sorry, our two bed rooms are all booked up for those dates."' +
-			'\n- "I\'m sorry, all of our two bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"';
+			'\n+ "* (two bed) * "' +
+			'\n- "roomTypeConfirm: Sorry, our two bed rooms are all booked up for those dates."' +
+			'\n- "roomTypeConfirm: I\'m sorry, all of our two bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"' +
+			
+			'\n\n+ "(goodbye|bye|see ya)"' +
+			'\n- "cancel: Goodbye. Come back soon!"' +
+			'\n- "cancel: Bye now. Have a nice day!"' +
+			'\n- "cancel: Thank you for visiting. Hope we see you soon!"'+
+			
+			'\n\n+ "* (change|switch|swap) room"' +
+			'\n- "What type of room would you like instead?"' +
+			'\n- "Alright, what type of room would you rather have?"' +
 
+			'\n\n+ "* (change|reschedule) the (date|day)"' +
+			'\n- "What days work better for you?"' +
+			'\n- "When would you like to reschedule your reservation?"';
+	
 			// Init and return the bot with the script
 			const bot = new Botlang(scriptString);
 			return bot;
