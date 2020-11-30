@@ -26,21 +26,15 @@
 			<form class="form-container">
 				<button type="button" class="cancel-button" @click="closeForm()">X</button>
 				<h3 class="chat-title">Customer Service Chat</h3>
-				<div class="chats" style="overflow: auto">
+				<div class="chats" id="chats" style="overflow: auto">
 					<div class="message-container">
 						<img src="../../public/bird.png" alt="Avatar" class="ai avatar" />
 						<p class="reply">Hi, I'm ChatBot! How can I help you today?</p>
 					</div>
-
-					<!-- <div class="message-container darker">
-						<img src="../../public/bird.png" alt="Avatar" class="user avatar" />
-						<p class="message">Hey! I'm fine. Thanks for asking!</p>
-					</div> -->
 				</div>
 				<div class="send-container">
-					<textarea id="msg" placeholder="Type message..." name="msg" v-model="msg" required></textarea>
-					<!-- TODO change message button to be handled by 'Enter' -->
-					<button class="send-button" v-on:click.prevent="sendUserMessage(msg)" type="submit">Send</button>
+					<textarea id="msg" placeholder="Type message..." name="msg" v-model="msg" required v-on:keyup.enter="sendUserMessage('textarea')"></textarea>
+					<button class="send-button" id="send" v-on:click.prevent="sendUserMessage(msg)" type="button">Send</button>
 				</div>
 			</form>
 		</div>
@@ -48,342 +42,294 @@
 	</div>
 </template>
 
-<script lang="ts">
+<script>
 import { Component, Vue } from 'vue-property-decorator';
-//import * as fs from "fs";
 import Botlang from 'botlang';
 
 export default {
-	data(){
-		return{
+	data() {
+		return {
 			msg: '',
 			lastMsgType: '',
 			datesSelectedFlag: false,
-			roomTypeSelectedFlag: false
-		}
+			roomTypeSelectedFlag: false,
+			bookingConfirmed: false
+		};
 	},
 	methods: {
 		openForm() {
-			const form = document.querySelector('#myForm') as HTMLElement;
-			form.style.display = 'block';			
+			const form = document.querySelector('#myForm');
+			form.style.display = 'block';
+			const textArea = document.querySelector('#msg');
+			textArea.focus();
 		},
 		closeForm() {
-			const form = document.querySelector('#myForm') as HTMLElement;
+			const form = document.querySelector('#myForm');
 			form.style.display = 'none';
 		},
-		sendUserMessage: function(msg: string){
+		sendUserMessage(msg) {
+			const chat = document.getElementById('chats');
+			//chat.scrollTop = chat.scrollHeight - chat.clientHeight;
+			const textArea = document.querySelector('#msg');
+			if (msg === 'textarea') {
+				msg = textArea.value;
+			}
 			// Clear the text area
-			const textArea = document.querySelector('#msg') as HTMLInputElement;
-			textArea.value = "";
+			textArea.value = '';
 
 			// Send the message bubble into the chat
-			const messageBubble = document.querySelector('.chats') as HTMLElement;
-			if(messageBubble){
-				messageBubble.innerHTML += "<div class='message-container darker'>"
-					+"<img src='/bird.png' alt='Avatar' class='user avatar' />"
-					+"<p class='message'>"+msg+"</p></div>";
+			const messageBubble = document.querySelector('.chats');
+			if (messageBubble) {
+				messageBubble.innerHTML += "<div class='message-container darker'>" + "<img src='/bird.png' alt='Avatar' class='user avatar' />" + "<p class='message'>" + msg + '</p></div>';
 			}
+			chat.lastChild.scrollIntoView();
 
 			// Now parse the message to craft a response
-			this.parseMessage(msg)
+			this.parseMessage(msg);
 		},
-		sendResponseMessage: function(msg: string){
+		sendResponseMessage(msg) {
+			const chat = document.getElementById('chats');
+
+			//chat.scrollTop = chat.scrollHeight - chat.clientHeight;
 			// Send the message bubble into the chat
-			const messageBubble = document.querySelector('.chats') as HTMLElement;
-			if(messageBubble){
-				messageBubble.innerHTML += "<div class='message-container'>"
-						+ "<img src='/bird.png' alt='Avatar' class='ai avatar' />"
-						+ "<p class='reply'>" + msg + "</p></div>"
+			const messageBubble = document.querySelector('.chats');
+			if (messageBubble) {
+				messageBubble.innerHTML += "<div class='message-container'>" + "<img src='/bird.png' alt='Avatar' class='ai avatar' />" + "<p class='reply'>" + msg + '</p></div>';
 			}
+			chat.lastChild.scrollIntoView();
 		},
-		parseMessage:function (msg: string){
+		parseMessage(msg) {
 			// Initialize the language bot
 			const bot = this.initBot();
 
+			const lastMsg = this.lastMsgType;
+
+			let msgType = '';
 			// Get the response and parse it out
 			const botResponse = bot.reply(msg);
-			console.log(botResponse)
-			const msgType = botResponse.split(":")[0];
-			const parsedMessage = botResponse.split(":")[1]; // Uncomment me when new format has been applied to script
-			const roomType = botResponse.split(":")[2];
-			console.log(botResponse)
-
-			const avail = this.availRand();
-
-			// this.lastMsgType = msgType;
+			if (botResponse.indexOf(':') > -1) {
+				msgType = botResponse.split(':')[0];
+				msg = botResponse.split(':')[1];
+				this.lastMsgType = msgType;
+			} else {
+				msgType = '';
+			}
+			const dateAvailable = Math.floor(Math.random() * 10 + 1);
+			const roomAvailable = Math.floor(Math.random() * 10 + 1);
 
 			// Figure out what to do based on the msgType
-			switch(msgType){
-				case "greeting":
-					// Not sure what we can do with this one - maybe it doesn't need its own category
-					this.sendResponseMessage(parsedMessage);
-					break;
-				case "dateConfirm":
+			switch (msgType) {
+				case 'dateConfirm':
 					// Important!! Do a check or some kind of random function for if there are rooms available for those dates
-					// If dates not available, prompt again
-					// If dates available, send already parsed message and set flag to true
-
-					// if(this.datesSelectedFlag){
-						//select confirmation repeat response
-					// }else{
-						if(avail){
-							
-							// this.datesSelectedFlag = true;
-							this.sendResponseMessage(parsedMessage);
-						}else{
-							const newBotResponse = bot.reply("dateNotAvail xxx2341");
-							this.sendResponseMessage(newBotResponse);
-						}
-					// }
+					if (dateAvailable <= 5) {
+						// If dates not available, prompt again
+						this.sendResponseMessage(bot.reply('dateAvail xx01'));
+					} else {
+						// If dates available, send message and set flag to true
+						this.datesSelectedFlag = true;
+						this.sendResponseMessage(bot.reply('dateAvail xx02'));
+					}
 					break;
-				case "roomTypeConfirm":
-					// Important!! Do a check or some kind of random function for which types of rooms available -
+				case 'suiteConfirm':
+					// Important!! Do a check or some kind of random function for which types of rooms available
 					// can be all types or nothing, or a combo of which are available and which not
-									
-					// if(this.roomTypeSelectedFlag){
-						//send room type repeat response
-					// }else{
-						switch(roomType){
-						case "suite":
-							if(avail){
-								// this.roomTypeSelectedFlag = true;
-								this.sendResponseMessage(parsedMessage);
-							}else{
-								const newBotResponse = bot.reply("suiteNotAvail xxx2341");
-								this.sendResponseMessage(newBotResponse);
-							}
-							break;
-						case "two":
-							if(avail){
-								// this.roomTypeSelectedFlag = true;
-								this.sendResponseMessage(parsedMessage);
-							}else{
-								const newBotResponse = bot.reply("twoBedNotAvail xxx2341");
-								this.sendResponseMessage(newBotResponse);
-							}
-							break;
-						case "one":
-							if(avail){
-								// this.roomTypeSelectedFlag = true;
-								this.sendResponseMessage(parsedMessage);
-							}else{
-								const newBotResponse = bot.reply("oneBedNotAvail xxx2341");
-								this.sendResponseMessage(newBotResponse);
-							}
-							break;
-						default:
-							console.log("ERR: Missing room type tag at end of bot response");
-							
-							break;
-						}
-					// }							
-				
+					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+						this.sendResponseMessage(bot.reply('suiteAvail xx01'));
+					} else {
+						this.roomTypeSelectedFlag = true;
+						this.sendResponseMessage(bot.reply('suiteAvail xx02'));
+						this.sendResponseMessage(bot.reply('askForConfirm xx01'));
+					}
 					break;
-				case "generalConfirm":	
+				case 'twoConfirm':
+					// Important!! Do a check or some kind of random function for which types of rooms available
+					// can be all types or nothing, or a combo of which are available and which not
+					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+						this.sendResponseMessage(bot.reply('twoAvail xx01'));
+					} else {
+						this.roomTypeSelectedFlag = true;
+						this.sendResponseMessage(bot.reply('twoAvail xx02'));
+						this.sendResponseMessage(bot.reply('askForConfirmm xx01'));
 
-					
-				
-					// Check the flags for which confirm this applies to and return one of the appropriate next steps
-					// If date and room type have been confirmed, send a wrap up message and reset everything
-					// If only date, ask for room type
-					// If none or only room type, ask for date
-
-					// if(this.roomTypeSelectedFlag && this.datesSelectedFlag){
-					// 	this.sendResponseMessage("finalResponse xxx2341");
-					// 	this.resetEverything();
-
-					// }else if(this.roomTypeSelectedFlag && !this.datesSelectedFlag){
-					// 	this.sendResponseMessage("confirmDateAgain xxx2341");
-
-					// }else if(!this.roomTypeSelectedFlag && this.datesSelectedFlag){
-					// 	this.sendResponseMessage("confirmRoomAgain xxx2341");
-					// }
-				
+					}
 					break;
-				case "changeRoom":
-					// this.roomTypeSelectedFlag = false;
+				case 'oneConfirm':
+					// Important!! Do a check or some kind of random function for which types of rooms available
+					// can be all types or nothing, or a combo of which are available and which not
+					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+						this.sendResponseMessage(bot.reply('oneAvail xx01'));
+					} else {
+						this.roomTypeSelectedFlag = true;
+						this.sendResponseMessage(bot.reply('oneAvail xx02'));
+						this.sendResponseMessage(bot.reply('askForConfirmm xx01'));
+					}
 					break;
-				case "changeDate":
-					// this.datesSelectedFlag = false;
-
-					break;	
-
-				case "cancel":
-					// Return an appropriate goodbye message and reset (resetEverything function)
-					this.sendResponseMessage(parsedMessage);
-					this.resetEverything();
-					break;
-				default: // aka case other
-					// Return the parsed message the bot gave out
-					this.sendResponseMessage(parsedMessage);
-
-					break;
-			}
-
-			// Send response
-			// this.sendResponseMessage(parsedMessage);
-		},
-		resetEverything:function(){
-			// this.datesSelectedFlag = false;
-			// this.roomTypeSelectedFlag = false;
-			console.log("reset")
-		},
-
-		availRand:function(){
-			const rand = Math.floor(Math.random() * Math.floor(3));
-			if(rand != 2){
-				return true;
-			}
-			return false;
-		},
-
-		initBot:function(){
-			// Using a string literal for the script as a last ditch resort
-			const scriptString = '# Botlang Script' + '\n+ "*"' +
-			'\n- "other: I\'m not sure I understand you fully."' +
-			'\n- "other: I\'m sorry, I don\'t understand."' +
-			'\n- "other: Could you rephrase that? I\'m having trouble understanding."' +
-
-			'\n\n+ "Hello?"' +
-			'\n- "greeting: Hi! How can I help you?"' +
-			'\n- "greeting: Hello!"' +
-
-			'\n\n+ "How are you?"' +
-			'\n- "other: I\'m doing well, thank you!"' +
-			'\n- "other: I\'m doing well, how about you?"' +
-			'\n- "other: I\'m doing good, how are you?"' +
-			'\n- "other: I\'m fantastic! How are you?"' +
-
-			'\n\n+ "Thank you!"' +
-			'\n- "other: You\'re welcome!"' +
-			'\n- "other: You\'re very welcome."' +
-			'\n- "other: Of course! You\'re welcome!"' +
-			'\n- "other: Anytime, You\'re welcome!"' +
-
-			'\n\n+ "Help"' +
-			'\n- "other: Alright, tell me how I can help!"' +
-			'\n- "other: Please let me know how I can help!"' +
-			'\n- "other: What can I help you with?"' +
-
-			'\n\n+ "* (book|reservation|room) *"' +
-			'\n- "other: Do you have a date range?"' +
-			'\n- "other: And what dates are you looking to book?"' +
-			'\n- "other: Okay! When would your stay be?"' +
-			'\n- "other: Can I get the dates You\'re looking to book?"' +
-			'\n- "other: What are the beginning and end dates of your stay?"' +
-			'\n- "other: Can do! What dates are you looking to book?"' +
-
-			'\n\n+ "* (book|make) reservation"' +
-			'\n- "other: Can I get the dates of the reservation?"' +
-			'\n- "other: And what are the dates you are looking to reserve?"' +
-			'\n- "other: Okay! Can I get the dates of the reservation you\'d like to make?"' +
-			'\n- "other: Awesome! When are you thinking about booking?"' +
-			'\n- "other: Ok what dates are you looking to book?"' +
-
-			'\n\n# if no rooms available' +
-			'\n+ "dateNotAvail xxx2341"' +
-			'\n- "I\'m sorry, there are no available rooms for those dates."' +
-			'\n- "I\'m sorry, we\'re all booked those dates. Would you like to try another date?"' +
-			'\n- "There are no rooms available for those dates, are there any other dates that will work for you?"' +
-			'\n- "There are no rooms available for those dates, I\'m sorry!"' +
-
-			'\n\n# if all rooms available' + 
-			'\n+ "* to *"' +
-			'\n- "dateConfirm: We have a one bed, two bed, or the suite available for those days. Which room would you prefer?"' +
-
-			'\n\n# if suite is not available' +
-			'\n+ "suiteNotAvail xxx2341"' +
-			'\n- "I\'m sorry, our suite is already booked for those dates. Let\'s try another date."' +
-			'\n- "Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
-			'\n- "Sorry, the suite isn\'t available for those dates, are there any other rooms or dates that work for you?"' +
-
-			'\n\n# if suite is available' +
-			'\n+ "* (suite) *"' +
-			'\n- "roomTypeConfirm: Good news! Our suite is available for those dates! It\'s 150€ a night and has a lovely view. Does that work for you?:suite"' +
-			'\n- "roomTypeConfirm: Alright, our suite is available for those dates, lets get you booked! It\'s 150€ a night, is that alright?:suite"' +
-			'\n- "roomTypeConfirm: The suite it is! I just want to confirm with you that It\'s 150€ a night.:suite"' +
-			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in the suite, then, at 150€ a night! Okay?:suite"' +
-
-			'\n\n+ "* (suite)"' +
-			'\n- "roomTypeConfirm: Good news! Our suite is available for those dates! It\'s 150€ a night and has a lovely view. Does that work for you?:suite"' +
-			'\n- "roomTypeConfirm: Alright, our suite is available for those dates, lets get you booked! It\'s 150€ a night, is that alright?:suite"' +
-			'\n- "roomTypeConfirm: The suite it is! I just want to confirm with you that It\'s 150€ a night.:suite"' +
-			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in the suite, then, at 150€ a night!:suite"' +
-
-			'\n\n# if two bed is available' +
-			'\n+ "* (2|two) bed *"' +
-			'\n- "roomTypeConfirm: Good news! We have a two bed room available for those dates! It\'s 100€ a night and quite comfortable. Sound good?:two"' +
-			'\n- "roomTypeConfirm: Alright, there are two bed rooms available for those dates, lets get you booked! It\'s 100€ a night, is that alright?:two"' +
-			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in a two bed, then, at 100€ a night! Okay?:two"' +
-
-			'\n\n+ "*(2|two) bed"' +
-			'\n- "roomTypeConfirm: Good news! We have a two bed room available for those dates! It\'s 100€ a night and quite comfortable. Sound good?:two"' +
-			'\n- "roomTypeConfirm: Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night, is that alright?:two"' +
-			'\n- "roomTypeConfirm: The suite it is! I just want to confirm with you that It\'s 100€ a night.:two"' +
-			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in the suite then at 100€ a night! Okay?:two"' +
-
-			'\n\n# if two bed is not available' +
-			'\n+ "twoBedNotAvail xxx2341"' +
-			'\n- "Sorry, our two bed rooms are all booked up for those dates. Do you have any other rooms or dates in mind?"' +
-			'\n- "I\'m sorry, all of our two bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"' +
-			
-			'\n\n# if one bed is available' +
-			'\n+ "* (1|one) bed *"' +
-			'\n- "roomTypeConfirm: Good news! We have a one bed room available for those dates! It\'s 50€ a night and very peaceful.:one"' +
-			'\n- "roomTypeConfirm: Alright, there is a one bed room available for those dates, lets get you booked! It\'s $50€ a night, is that alright?:one"' +
-			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in a one bed, then, at $50€ a night!:one"' +
-
-			'\n+ "* (1|one) bed" ' +
-			'\n- "roomTypeConfirm: Good news! We have a one bed room available for those dates! It\'s $50€ a night and very peaceful.:one"' +
-			'\n- "roomTypeConfirm: Alright, there is a one bed room available for those dates, lets get you booked! It\'s $50€ a night, is that alright?:one"' +
-			'\n- "roomTypeConfirm: Can do, you\'ll be booked for those dates in a one bed, then, at $50€ a night!:one"' +
-			
-			'\n\n# if one bed is not available' +
-			'\n+ "oneBedNotAvail xxx2341"' +
-			'\n- "I\'m sorry, all of our one bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"' +
-			'\n- "Sorry, our one bed rooms are all booked up for those dates. Do you have any other rooms or dates in mind?"' +
-
-			'\n\n+ "(goodbye|bye|see ya|nevermind)"' +
-			'\n- "cancel: Goodbye. Come back soon!"' +
-			'\n- "cancel: Bye now. Have a nice day!"' +
-			'\n- "cancel: Thank you for visiting. Hope we see you soon!"' +
-			
-			'\n\n+ "* (change|switch|swap) room"' +
-			'\n- "changeRoom: What type of room would you like instead?"' +
-			'\n- "changeRoom: Alright, what type of room works better fore you?"' +
-
-			'\n\n+ "* (change|reschedule) the (date|day)"' +
-			'\n- "changeDate: What days work better for you?"' +
-			'\n- "changeDate: Okay, so what days would you like to schedule instead?"' +
-			
-			'\n\n+ "(yes|yep|that works|sounds good)"' +
-			'\n- "generalConfirm: Okay"' +
-			'\n- "generalConfirm: Great!"' +
-			'\n- "generalConfirm: You got it!"' +
-			
-			'\n\n "confirmRoomAgain xxx2341"' +
-			'"What type of room do you prefer?"' +
-			'"What kind of room are you looking for?"' + 
-			'"Can you tell me which room you would like?"' +
-			
-			'\n\n "confirmDateAgain xxx2341"' +
-			'"Can you tell me the dates you\'re looking to book?"' +
-			'"Which days would you like to reserve?"' +
-			'"Can I get the dates of the reservation?"' + 
-			
-			'\n\n "finalResponse xxx2341"' +
-			'"Okay, you are all set. Thank you for choosing the The Bird Bath! See you soon!"' +
-			'"Everything sems to be in order. You\'re reservation is complete. Thank you and have a great rest of you\'re day!"';
-
-
-
 	
+				case 'generalConfirm':
+					// Check the flags for which confirm this applies to and return one of the appropriate next steps
+
+					if (this.roomTypeSelectedFlag && this.roomTypeSelectedFlag) {
+						// If date and room type have been confirmed, send a wrap up message and reset everything
+						this.sendResponseMessage(bot.reply('confirmResponse xx01'));
+					} else if (this.datesSelectedFlag === true && this.roomTypeSelectedFlag === false) {
+						// If only date, ask for room type
+						this.sendResponseMessage(bot.reply('confirmResponse xx02'));
+					} else {
+						// If none or only room type, ask for date
+						this.sendResponseMessage(bot.reply('confirmResponse xx03'));
+					}
+					break;
+				case 'cancel':
+					// Return an appropriate goodbye message and reset (resetEverything function)
+					this.resetEverything();
+					this.sendResponseMessage(msg);
+					break;
+				default:
+					// Return the parsed message the bot gave out
+					this.sendResponseMessage(msg);
+					break;
+			}
+		},
+		resetEverything: function() {
+			this.datesSelectedFlag = false;
+			this.roomTypeSelectedFlag = false;
+		},
+		initBot: function() {
+			// Using a string literal for the script as a last ditch resort
+			const scriptString =
+				'# Botlang Script' +
+				'\n+ "*"' +
+				'\n- "I\'m not sure I understand you fully."' +
+				'\n- "I\'m sorry, I don\'t understand."' +
+				'\n- "Could you rephrase that? I\'m having trouble understanding."' +
+				'\n- "I\'m sorry, but I am unable to answer that."' +
+				'\n\n+ "(Hello?|Hi|Hey)"' +
+				'\n- "Hi! How can I help you?"' +
+				'\n- "Hello!"' +
+				'\n- "Hello, what can I help you with?"' +
+				'\n\n+ "How are you?"' +
+				'\n- "I\'m doing well, thank you!"' +
+				'\n- "I\'m doing well, how about you?"' +
+				'\n- "I\'m doing good, how are you?"' +
+				'\n- "I\'m fantastic! How are you?"' +
+				'\n\n+ "Where am I?"' +
+				'\n- "You\'re on The Bird Box\'s company website. What can I help you with?"' +
+				'\n\n+ "Thank you!"' +
+				'\n- "You\'re welcome!"' +
+				'\n- "You\'re very welcome."' +
+				'\n- "Of course! You\'re welcome!"' +
+				'\n- "Anytime, You\'re welcome!"' +
+				'\n- "No problem, glad to help!"' +
+				'\n\n+ "(your|ur|you\'r) name"' +
+				'\n- "My name is ChatBox!"' +
+				'\n\n+ "Help"' +
+				'\n- "Alright, tell me how I can help!"' +
+				'\n- "Please let me know how I can help!"' +
+				'\n- "What can I help you with?"' +
+				'\n- "What can I do to help?"' +
+				'\n\n+ "(contact|info)"' +
+				'\n- "Our email is theBirdBox@email.com and phone number is (132) 213 - 1231. Feel free to contact us and tell us know how we\'re doing!"' +
+				'\n- "Our company email is theBirdBox@email.com and company number is (132) 213 - 1231. Can I help you with anything else?"' +
+				'\n\n+ "* (book|reservation|room) *"' +
+				'\n- "Do you have a date range?"' +
+				'\n- "And what dates are you looking to book?"' +
+				'\n- "Okay! When would your stay be?"' +
+				'\n- "Can I get the dates You\'re looking to book?"' +
+				'\n- "What are the beginning and end dates of your stay?"' +
+				'\n- "Can do! What dates are you looking to book?"' +
+				'\n\n+ "* (book|make) reservation"' +
+				'\n- "Can I get the dates of the reservation?"' +
+				'\n- "And what are the dates you are looking to reserve?"' +
+				'\n- "Okay! Can I get the dates of the reservation you\'d like to make?"' +
+				'\n- "Awesome! When are you thinking about booking?"' +
+				'\n- "Ok what dates are you looking to book?"' +
+				'\n\n+ "* (type|kind|style) of (room|unit)"' +
+				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
+				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
+				'\n\n+ "* (to|-) *"' +
+				'\n- "dateConfirm: DATE CHECK"' +
+				'\n\n+ "dateAvail xx01"' +
+				'\n- "I\'m sorry, there are no available rooms for those dates."' +
+				'\n- "I\'m sorry, we\'re all booked those dates."' +
+				'\n- "There are no rooms available for those dates, are there any other datest that will work for you?"' +
+				'\n- "There are no rooms available for those dates, I\'m sorry!"' +
+				'\n\n+ "dateAvail xx02"' +
+				'\n- "We have some rooms available, what type were you looking to book?"' +
+				'\n- "Alright, we have some rooms available. What kind of room are you looking for?"' +
+				'\n\n+ "* (suite) *"' +
+				'\n- "suiteConfirm: SUITE CHECK."' +
+				'\n\n+ "suiteAvail xx01"' +
+				'\n- "I\'m sorry, our suite is already booked for those dates."' +
+				'\n- "Our suite is not available for those dates, is there another date range you\'d be able to book?"' +
+				'\n- "Sorry our suite is not available for those dates, is there another room you\'d like to book for those dates?"' +
+				'\n- "Sorry, the suite isn\'t available for those dates, are there any other rooms or dates that work for you?"' +
+				'\n\n+ "suiteAvail xx02"' +
+				'\n- "Good news! Our suite is available for those dates! It\'s 100€ a night and has a lovely view."' +
+				'\n- "Alright, our suite is available for those dates, lets get you booked! It\'s 100€ a night."' +
+				'\n- "The suite it is! I just want to confirm with you that It\'s 100€ a night."' +
+				'\n- "Can do, you\'ll be booked for those dates in the suite, then, at 100€ a night!"' +
+				'\n\n+ "* (2|two) bed *"' +
+				'\n- "twoConfirm: TWO BED CHECK"' +
+				'\n\n+ "twoAvail xx01"' +
+				'\n- "Sorry, our two bed rooms are all booked up for those dates. Do you have any other rooms or dates in mind?"' +
+				'\n- "Sorry our two bed rooms are not available for those dates, is there another room you\'d like to book for those dates?"' +
+				'\n- "I\'m sorry, all of our two bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"' +
+				'\n+ "twoAvail xx02"' +
+				'\n- "Good news! We have a two bed room available for those dates! It\'s 50€ a night and quite comfortable."' +
+				'\n- "Alright, there are two bed rooms available for those dates, lets get you booked! It\'s 50€ a night."' +
+				'\n- "Can do, you\'ll be booked for those dates in a two bed, then, at 50€ a night!"' +
+				'\n- "roomTypeConfirm: The two bed room is available! I just want to confirm with you that It\'s 50€ a night!. "' +
+				'\n+ "* (1|one) bed *"' +
+				'\n- "oneConfirm: ONE BED CHECK"' +
+				'\n\n+ "oneAvail xx01"' +
+				'\n- "Sorry, our one bed rooms are all booked up for those dates. Do you have another day or room in mind?"' +
+				'\n- "Sorry our one bed rooms are not available for those dates, is there another room you\'d like to book for those dates?"' +
+				'\n- "I\'m sorry, all of our one bed rooms are already booked for those dates. Are there any other rooms or dates that work for you?"' +
+				'\n\n+ "oneAvail xx02"' +
+				'\n- "Good news! We have a one bed room available for those dates! It\'s 25€ a night and quite comfortable!"' +
+				'\n- "Great news! We have a one bed room available for those dates! It\'s 25€ a night. Its very peaceful!"' +
+				'\n- "Alright, there are one bed rooms available for those dates, lets get you booked! It\'s 25€ a night."' +
+				'\n- "Can do, you\'ll be booked for those dates in a one bed, then, at 25€ a night!"' +
+				'\n\n+ "(goodbye|bye|see ya|cancel|exit)"' +
+				'\n- "cancel: Goodbye. Come back soon!"' +
+				'\n- "cancel: Bye now. Have a nice day!"' +
+				'\n- "cancel: Thank you for visiting. Hope we see you soon!"' +
+				'\n- "cancel: Thanks for visiting The Bird Bath. Have a great day!"' +
+				'\n\n+ "* (change|switch|swap) room"' +
+				'\n- "What type of room would you like instead?"' +
+				'\n- "Alright, what type of room would you rather have?"' +
+				'\n- "Alright, what type of room works better for you?"' +
+				'\n\n+ "* (change|reschedule) the (date|day|dates)"' +
+				'\n- "What days work better for you?"' +
+				'\n- "When would you like to reschedule your reservation?"'
+				'\n- "Okay, so what days would you like to schedule instead?"' +
+				'\n\n+ "askForConfirm xx01"' +
+				'\n- "Okay?"' +
+				'\n- "Does this sound like a plan to you?"' +
+				'\n- "Is this okay?"' +
+				'\n- "Does this work for you?"' +
+				'\n- "Does this sound good to you?"';
+				'\n\n+ "confirmResponse xx03"' +
+				'\n- "Can you tell me the dates you\'re looking to book?"' +
+				'\n- "Which days would you like to reserve?"' +
+				'\n- "Can I get the dates of the reservation?"';
+				'\n\n+ "confirmResponse xx02"' +
+				'\n- "What type of room do you prefer?"' +
+				'\n- "What kind of room are you looking for?"' + 
+				'\n- "Can you tell me which room you would like?"' +
+				'\n\n+ "confirmResponse xx01"' +
+				'\n- "Okay, you are all set. Thank you for choosing The Bird Bath! See you soon!"' +
+				'\n- "Great! Thank you for choosing The Bird Bath!"' +
+				'\n- "Everything sems to be in order. You\'re reservation is complete. Thank you and have a great rest of you\'re day!"' +
+				'\n\n+ "(yes|yep|that works|sounds good|confirm)"' +
+				'\n- "generalConfirm: Okay"' +
+				'\n- "generalConfirm: Great!"';
+
 			// Init and return the bot with the script
 			const bot = new Botlang(scriptString);
 			return bot;
 		}
 	}
-
 };
 </script>
 
@@ -520,7 +466,7 @@ p {
 	border-radius: 5px;
 	padding: 10px;
 	margin: 10px 0;
-	height: 35px;
+	min-height: 2.5em;
 }
 .darker {
 	border-color: #957d959a;
