@@ -100,17 +100,71 @@ export default {
 		parseMessage(msg) {
 			// Initialize the language bot
 			const bot = this.initBot();
-
 			let msgType = '';
 			// Get the response and parse it out
 			const botResponse = bot.reply(msg);
 			if (botResponse.indexOf(':') > -1) {
 				msgType = botResponse.split(':')[0];
 				msg = botResponse.split(':')[1];
-				this.lastMsgType = msgType;
 			} else {
 				msgType = '';
 			}
+
+			// YES / NO CHECK
+			const confirmFormat = ['yes', 'no', 'confirm', 'that works', 'yep', 'sure', 'sounds good', 'yeah', 'no thank you', 'no thanks', 'nope', 'nevermind'];
+			const msgCheck = msg.toLowerCase();
+			confirmFormat.forEach((word) => {
+				if (msgCheck.indexOf(word) > -1) {
+					if (this.datesSelectedFlag === true || this.roomTypeSelectedFlag === true) {
+						msgType = 'generalConfirm';
+					} else {
+						msgType = '';
+					}
+				}
+			});
+
+			// NUMBER CHECK
+			const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+			let hasNumber = false;
+			numbers.forEach((num) => {
+				if (msg.indexOf(num) > -1) {
+					hasNumber = true;
+				}
+			});
+
+			// DATE VS ROOM CHECK
+			const dateFormat = ['/', '.', '-', 'to'];
+			const roomFormat = ['bed', 'beds'];
+			let isDate = false;
+			let isOneRoom = false;
+			let isTwoRoom = false;
+			if (hasNumber) {
+				//Check if the number is for date confirm or room confirm
+				dateFormat.forEach((symbol) => {
+					if (msg.indexOf(symbol) > -1) {
+						isDate = true;
+					}
+				});
+
+				roomFormat.forEach((word) => {
+					if (msg.indexOf(word) > -1) {
+						if (msg.indexOf('1') > -1) {
+							isOneRoom = true;
+						} else if (msg.indexOf('2') > -1) {
+							isTwoRoom = true;
+						}
+					}
+				});
+			}
+
+			if (isDate) {
+				msgType = 'dateConfirm';
+			} else if (isOneRoom) {
+				msgType = 'oneConfirm';
+			} else if (isTwoRoom) {
+				msgType = 'twoConfirm';
+			}
+
 			const dateAvailable = Math.floor(Math.random() * 10 + 1);
 			const roomAvailable = Math.floor(Math.random() * 10 + 1);
 
@@ -121,11 +175,11 @@ export default {
 					if (dateAvailable <= 5) {
 						// If dates not available, prompt again
 						this.sendResponseMessage(bot.reply('dateAvail xx01'));
-					} else if(this.roomTypeSelectedFlag){
+					} else if (this.roomTypeSelectedFlag) {
 						this.datesSelectedFlag = true;
 						this.sendResponseMessage(bot.reply('dateAvail xx03'));
 						this.sendResponseMessage(bot.reply('askForResponse xx01'));
-					}else{
+					} else {
 						// If dates available, send message and set flag to true
 						this.datesSelectedFlag = true;
 						this.sendResponseMessage(bot.reply('dateAvail xx02'));
@@ -151,7 +205,6 @@ export default {
 						this.roomTypeSelectedFlag = true;
 						this.sendResponseMessage(bot.reply('twoAvail xx02'));
 						this.sendResponseMessage(bot.reply('askForResponse xx01'));
-
 					}
 					break;
 				case 'oneConfirm':
@@ -165,7 +218,7 @@ export default {
 						this.sendResponseMessage(bot.reply('askForResponse xx01'));
 					}
 					break;
-	
+
 				case 'generalConfirm':
 					// Check the flags for which confirm this applies to and return one of the appropriate next steps
 
@@ -187,6 +240,7 @@ export default {
 					break;
 				default:
 					// Return the parsed message the bot gave out
+					console.log('default');
 					this.sendResponseMessage(botResponse);
 					break;
 			}
@@ -206,31 +260,39 @@ export default {
 				'\n- "I\'m sorry, but I am unable to answer that."' +
 				'\n\n+ "(Hello?|Hi|Hey)"' +
 				'\n- "Hi! How can I help you?"' +
-				'\n- "Hello!"' +
+				'\n- "Hello"' +
 				'\n- "Hello, what can I help you with?"' +
 				'\n\n+ "How are you?"' +
 				'\n- "I\'m doing well, thank you!"' +
 				'\n- "I\'m doing well, how about you?"' +
 				'\n- "I\'m doing good, how are you?"' +
 				'\n- "I\'m fantastic! How are you?"' +
+				'\n\n+ "What is your name?"' +
+				'\n- "My name is Birdie! What\'s yours?"' +
+				'\n- "My name is Birdie, what\'s your name?"' +
+				'\n\n+ "My name is $"' +
+				'\n- "Nice to meet you $!"' +
+				'\n\n+ "Nice to meet you"' +
+				'\n- "Nice to meet you as well!"' +
+				'\n- "It\'s nice to meet you too!"' +
 				'\n\n+ "Where am I?"' +
-				'\n- "You\'re on The Bird Box\'s company website. What can I help you with?"' +
+				'\n- "You\'re on The Bird Bath\'s company website. What can I help you with?"' +
 				'\n\n+ "(Thank you|thanks|I appreciate it|thx)"' +
 				'\n- "You\'re welcome!"' +
 				'\n- "You\'re very welcome."' +
 				'\n- "Of course! You\'re welcome!"' +
-				'\n- "Anytime, You\'re welcome!"' +
-				'\n- "No problem, glad to help!"' +
 				'\n\n+ "(your|ur|you\'r) name"' +
-				'\n- "My name is ChatBox!"' +
+				'\n- "My name is Birdie!"' +
+				'\n- "My name is Birdie! What\'s yours?"' +
+				'\n- "My name is Birdie, what\'s your name?"' +
 				'\n\n+ "Help"' +
 				'\n- "Alright, tell me how I can help!"' +
 				'\n- "Please let me know how I can help!"' +
 				'\n- "What can I help you with?"' +
 				'\n- "What can I do to help?"' +
-				'\n\n+ "(contact|info)"' +
-				'\n- "Our email is theBirdBox@email.com and phone number is (132) 213 - 1231."' +
-				'\n- "Our company email is theBirdBox@email.com and company number is (132) 213 - 1231. How else can I help you?"' +
+				'\n\n+ "(contact|info|human|representative)"' +
+				'\n- "Our email is theBirdBath@email.com and phone number is (132) 213 - 1231."' +
+				'\n- "Our company email is theBirdBath@email.com and company number is (132) 213 - 1231. How else can I help you?"' +
 				'\n\n+ "* (book|reservation) *"' +
 				'\n- "Do you have a date range?"' +
 				'\n- "And what dates are you looking to book?"' +
@@ -247,8 +309,6 @@ export default {
 				'\n\n+ "* (type|kind|style) of (room|unit)"' +
 				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
 				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
-				'\n\n+ "* (to|-) *"' +
-				'\n- "dateConfirm: DATE CHECK"' +
 				'\n\n+ "dateAvail xx01"' +
 				'\n- "I\'m sorry, there are no available rooms for those dates."' +
 				'\n- "I\'m sorry, we\'re all booked those dates."' +
@@ -311,11 +371,11 @@ export default {
 				'\n- "Alright, what type of room works better for you?"' +
 				'\n\n+ "* (change|reschedule) the (date|day|dates)"' +
 				'\n- "What days work better for you?"' +
-				'\n- "When would you like to reschedule your reservation?"'+
+				'\n- "When would you like to reschedule your reservation?"' +
 				'\n- "Okay, so what days would you like to schedule instead?"' +
 				'\n\n+ "* (change|reschedule) (date|day|dates)"' +
 				'\n- "What days work better for you?"' +
-				'\n- "When would you like to reschedule your reservation?"'+
+				'\n- "When would you like to reschedule your reservation?"' +
 				'\n- "Okay, so what days would you like to schedule instead?"' +
 				'\n\n+ "askForResponse xx01"' +
 				'\n- "Okay?"' +
@@ -329,18 +389,16 @@ export default {
 				'\n- "Can I get the dates of the reservation?"' +
 				'\n\n+ "generalResponse xx02"' +
 				'\n- "What type of room do you prefer?"' +
-				'\n- "What kind of room are you looking for?"' + 
+				'\n- "What kind of room are you looking for?"' +
 				'\n- "Can you tell me which room you would like?"' +
 				'\n\n+ "generalResponse xx01"' +
 				'\n- "Okay, you are all set. Thank you for choosing The Bird Bath! See you soon!"' +
 				'\n- "Great! Thank you for choosing The Bird Bath!"' +
 				'\n- "Everything sems to be in order. You\'re reservation is complete. Thank you and have a great rest of you\'re day!"' +
 				'\n\n+ "(yes|yep|that works|sounds good|confirm)"' +
-				'\n- "generalConfirm: CONFIRM CHECK"' +
+				'\n- "Alright!"' +
 				'\n\n+ "(no|nope|no thank you| no thanks)"' +
-				'\n- "Okay. What would work instead?"' +
-				'\n- "That\'s okay! What would be a better option?"' +
-				'\n- "Let\'s work out something else? Do you have any other preferences?"';
+				'\n- "We can work this out, how can I help you?"';
 
 			// Init and return the bot with the script
 			const bot = new Botlang(scriptString);
