@@ -1,9 +1,9 @@
 <template>
 	<div id="app">
 		<div id="nav">
-			<img src="../public/bird-bath.png" />
 			<router-link to="/">Home |</router-link>
-			<router-link to="/"> Reservations |</router-link>
+			<router-link to="/"> Reservations </router-link>
+			<img src="../public/bird-bath.png" />
 			<router-link to="/"> Deals |</router-link>
 			<router-link to="/"> Contact</router-link>
 		</div>
@@ -21,7 +21,11 @@
 }
 
 #nav {
-	padding: 30px;
+	padding: 10px;
+	padding-bottom: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	border-bottom: 8px double #957d95;
 	width: 101%;
 	a {
@@ -37,9 +41,7 @@
 	}
 	img {
 		max-width: 85px;
-		position: absolute;
-		left: 30px;
-		top: 12px;
+		margin: 0px 20px;
 	}
 }
 </style>
