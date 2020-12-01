@@ -33,7 +33,7 @@
 				<div class="chats" id="chats" style="overflow: auto">
 					<div class="message-container">
 						<img src="../../public/bird.png" alt="Avatar" class="ai avatar" />
-						<p class="reply">Hi, I'm ChatBot! How can I help you today?</p>
+						<p class="reply">Hi, I'm ChatBot, the room reservation assistant! How can I help you today?</p>
 					</div>
 				</div>
 				<div class="send-container">
@@ -70,9 +70,9 @@ export default {
 			const form = document.querySelector('#myForm');
 			form.style.display = 'none';
 		},
+		// This function translates the user's input in the text box into a message bubble
 		sendUserMessage(msg) {
 			const chat = document.getElementById('chats');
-			//chat.scrollTop = chat.scrollHeight - chat.clientHeight;
 			const textArea = document.querySelector('#msg');
 			if (msg === 'textarea') {
 				msg = textArea.value;
@@ -90,10 +90,10 @@ export default {
 			// Now parse the message to craft a response
 			this.parseMessage(msg);
 		},
+		// This function translates the bot's output into a text box response message bubble
 		sendResponseMessage(msg) {
 			const chat = document.getElementById('chats');
 
-			//chat.scrollTop = chat.scrollHeight - chat.clientHeight;
 			// Send the message bubble into the chat
 			const messageBubble = document.querySelector('.chats');
 			if (messageBubble) {
@@ -101,34 +101,125 @@ export default {
 			}
 			chat.lastChild.scrollIntoView();
 		},
+		// Main function that interprets the user's message and decides how to respond
 		parseMessage(msg) {
 			// Initialize the language bot
 			const bot = this.initBot();
 			let msgType = '';
-			// Get the response and parse it out
+
+			// First scrub the input to replace the dashes
+			msg = msg.replace("1-bed", "1 bed")
+			msg = msg.replace("2-bed", "2 bed")
+
+			// Get the bot's suggested response and parse it out
 			const botResponse = bot.reply(msg);
 			if (botResponse.indexOf(':') > -1) {
 				msgType = botResponse.split(':')[0];
 				msg = botResponse.split(':')[1];
 			} else {
-				msgType = '';
+				// Determine if any numbers in the message are related to the dates or to the room type
+				msgType = this.determineRoomTypeOrDate(msg)
 			}
 
-			// YES / NO CHECK
-			const confirmFormat = ['yes', 'no', 'ok', 'okay', 'confirm', 'that works', 'yep', 'sure', 'sounds good', 'yeah', 'no thank you', 'no thanks', 'nope', 'nevermind'];
-			const msgCheck = msg.toLowerCase();
-			confirmFormat.forEach((word) => {
-				if (msgCheck.indexOf(word) > -1) {
-					if (this.datesSelectedFlag === true || this.roomTypeSelectedFlag === true) {
-						msgType = 'generalConfirm';
-					} else {
-						msgType = '';
-					}
-				}
-			});
+			// Generate random numbers to decide if the date/rooms are available
+			// NOTE: In a real application, this would be a call to a backend service that would check availability
+			// but for the scope of this project it's a random number
+			const dateAvailable = Math.floor(Math.random() * 10 + 1);
+			const roomAvailable = Math.floor(Math.random() * 10 + 1);
 
+			// Figure out what to do based on the msgType
+			switch (msgType) {
+				case 'dateConfirm':
+					if (dateAvailable <= 3) {
+						// The dates are not available, so prompt again
+						this.sendResponseMessage(bot.reply('dateAvail xx01'));
+					} else if (this.roomTypeSelectedFlag) {
+						// A room has already been selected and the dates are available so ask for confirmation
+						this.datesSelectedFlag = true; // Also set the flag to true
+						this.sendResponseMessage(bot.reply('dateAvail xx03'));
+						this.sendResponseMessage(bot.reply('askForResponse xx01'));
+					} else {
+						// The dates are available, so prompt for room type
+						this.datesSelectedFlag = true; // Also set the flag to true
+						this.sendResponseMessage(bot.reply('dateAvail xx02'));
+					}
+					break;
+				case 'suiteConfirm':
+					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+						this.sendResponseMessage(bot.reply('suiteAvail xx01'));
+					} else {
+						this.roomTypeSelectedFlag = true;
+						this.sendResponseMessage(bot.reply('suiteAvail xx02'));
+						this.sendResponseMessage(bot.reply('askForResponse xx01'));
+					}
+					break;
+				case 'twoConfirm':
+					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+						this.sendResponseMessage(bot.reply('twoAvail xx01'));
+					} else {
+						this.roomTypeSelectedFlag = true;
+						this.sendResponseMessage(bot.reply('twoAvail xx02'));
+						this.sendResponseMessage(bot.reply('askForResponse xx01'));
+					}
+					break;
+				case 'oneConfirm':
+					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+						this.sendResponseMessage(bot.reply('oneAvail xx01'));
+					} else {
+						this.roomTypeSelectedFlag = true;
+						this.sendResponseMessage(bot.reply('oneAvail xx02'));
+						this.sendResponseMessage(bot.reply('askForResponse xx01'));
+					}
+					break;
+
+				case 'generalConfirm':
+					// Check the flags for which confirm this applies to and return one of the appropriate next steps
+					if (this.roomTypeSelectedFlag && this.datesSelectedFlag) {
+						// If date and room type have been confirmed, send a wrap up message and reset everything
+						this.sendResponseMessage(bot.reply('generalResponse xx01'));
+						this.resetEverything()
+					} else if (this.datesSelectedFlag === true && this.roomTypeSelectedFlag === false) {
+						// If only date, ask for room type
+						this.sendResponseMessage(bot.reply('generalResponse xx02'));
+					} else {
+						// If none or only room type, ask for date
+						this.sendResponseMessage(bot.reply('generalResponse xx03'));
+					}
+					break;
+				case 'generalNo':
+					// If the user isn't happy with the confirmation, gradually go back and reset a flag every time
+					if (this.roomTypeSelectedFlag && this.datesSelectedFlag) {
+						// Not happy with total confirmation, so prompt different room type
+						this.sendResponseMessage(bot.reply('generalNo xx01'));
+						this.roomTypeSelectedFlag = false
+					} else if (this.datesSelectedFlag === true && this.roomTypeSelectedFlag === false) {
+						// Not happy with dates, so prompt a different date
+						this.sendResponseMessage(bot.reply('generalNo xx02'));
+						this.datesSelectedFlag = false
+					} else {
+						// Not happy at all, so close the conversation
+						this.sendResponseMessage(bot.reply('leavingMsg xx01'));
+					}
+					break;
+				case 'cancel':
+					// Return an appropriate goodbye message and reset (resetEverything function)
+					this.resetEverything();
+					this.sendResponseMessage(bot.reply('leavingMsg xx01'));
+					break;
+				case 'status':
+					this.sendResponseMessage('Date flag: ' + this.datesSelectedFlag + '\nRoom type flag: ' + this.roomTypeSelectedFlag)
+					break;
+				default:
+					// Return the parsed message the bot gave out
+					console.log('default');
+					this.sendResponseMessage(botResponse);
+					break;
+			}
+		},
+		determineRoomTypeOrDate(msg) {
 			// NUMBER CHECK
 			const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+			let msgType = "";
 			let hasNumber = false;
 			numbers.forEach((num) => {
 				if (msg.indexOf(num) > -1) {
@@ -161,6 +252,7 @@ export default {
 				});
 			}
 
+			// Set the msgType based on the findings
 			if (isDate) {
 				msgType = 'dateConfirm';
 			} else if (isOneRoom) {
@@ -168,86 +260,7 @@ export default {
 			} else if (isTwoRoom) {
 				msgType = 'twoConfirm';
 			}
-
-			const dateAvailable = Math.floor(Math.random() * 10 + 1);
-			const roomAvailable = Math.floor(Math.random() * 10 + 1);
-
-			// Figure out what to do based on the msgType
-			switch (msgType) {
-				case 'dateConfirm':
-					// Important!! Do a check or some kind of random function for if there are rooms available for those dates
-					if (dateAvailable <= 3) {
-						// If dates not available, prompt again
-						this.sendResponseMessage(bot.reply('dateAvail xx01'));
-					} else if (this.roomTypeSelectedFlag) {
-						this.datesSelectedFlag = true;
-						this.sendResponseMessage(bot.reply('dateAvail xx03'));
-						this.sendResponseMessage(bot.reply('askForResponse xx01'));
-					} else {
-						// If dates available, send message and set flag to true
-						this.datesSelectedFlag = true;
-						this.sendResponseMessage(bot.reply('dateAvail xx02'));
-					}
-					break;
-				case 'suiteConfirm':
-					// Important!! Do a check or some kind of random function for which types of rooms available
-					// can be all types or nothing, or a combo of which are available and which not
-					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
-						this.sendResponseMessage(bot.reply('suiteAvail xx01'));
-					} else {
-						this.roomTypeSelectedFlag = true;
-						this.sendResponseMessage(bot.reply('suiteAvail xx02'));
-						this.sendResponseMessage(bot.reply('askForResponse xx01'));
-					}
-					break;
-				case 'twoConfirm':
-					// Important!! Do a check or some kind of random function for which types of rooms available
-					// can be all types or nothing, or a combo of which are available and which not
-					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
-						this.sendResponseMessage(bot.reply('twoAvail xx01'));
-					} else {
-						this.roomTypeSelectedFlag = true;
-						this.sendResponseMessage(bot.reply('twoAvail xx02'));
-						this.sendResponseMessage(bot.reply('askForResponse xx01'));
-					}
-					break;
-				case 'oneConfirm':
-					// Important!! Do a check or some kind of random function for which types of rooms available
-					// can be all types or nothing, or a combo of which are available and which not
-					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
-						this.sendResponseMessage(bot.reply('oneAvail xx01'));
-					} else {
-						this.roomTypeSelectedFlag = true;
-						this.sendResponseMessage(bot.reply('oneAvail xx02'));
-						this.sendResponseMessage(bot.reply('askForResponse xx01'));
-					}
-					break;
-
-				case 'generalConfirm':
-					// Check the flags for which confirm this applies to and return one of the appropriate next steps
-
-					if (this.roomTypeSelectedFlag && this.datesSelectedFlag) {
-						// If date and room type have been confirmed, send a wrap up message and reset everything
-						this.sendResponseMessage(bot.reply('generalResponse xx01'));
-					} else if (this.datesSelectedFlag === true && this.roomTypeSelectedFlag === false) {
-						// If only date, ask for room type
-						this.sendResponseMessage(bot.reply('generalResponse xx02'));
-					} else {
-						// If none or only room type, ask for date
-						this.sendResponseMessage(bot.reply('generalResponse xx03'));
-					}
-					break;
-				case 'cancel':
-					// Return an appropriate goodbye message and reset (resetEverything function)
-					this.resetEverything();
-					this.sendResponseMessage(bot.reply('leavingMsg xx01'));
-					break;
-				default:
-					// Return the parsed message the bot gave out
-					console.log('default');
-					this.sendResponseMessage(botResponse);
-					break;
-			}
+			return msgType;
 		},
 		resetEverything: function() {
 			this.datesSelectedFlag = false;
@@ -261,10 +274,6 @@ export default {
 				'\n- "I\'m not sure I understand you fully."' +
 				'\n- "I\'m sorry, I don\'t understand."' +
 				'\n- "Could you rephrase that? I\'m having trouble understanding."' +
-				'\n\n+ "(Hello?|Hi|Hey)"' +
-				'\n- "Hi! How can I help you?"' +
-				'\n- "Hello"' +
-				'\n- "Hello, what can I help you with?"' +
 				'\n\n+ "How are you?"' +
 				'\n- "I\'m doing well, thank you!"' +
 				'\n- "I\'m doing well, how about you?"' +
@@ -305,10 +314,24 @@ export default {
 				'\n- "Our email is theBirdBath@email.com and phone number is (132) 213 - 1231."' +
 				'\n- "Our company email is theBirdBath@email.com and company number is (132) 213 - 1231. How else can I help you?"' +
 				'\n\n+ "* (book|reservation) *"' +
-				'\n- "Do you have a date range?"' +
+				'\n- "Awesome! Do you have a date range you\'re thinking of?"' +
 				'\n- "And what dates are you looking to book?"' +
 				'\n- "Okay! When would your stay be?"' +
-				'\n- "Can I get the dates You\'re looking to book?"' +
+				'\n- "Can I get the dates you\'re looking to book?"' +
+				'\n- "What are the beginning and end dates of your stay?"' +
+				'\n- "Can do! What dates are you looking to book?"' +
+				'\n\n+ "* (reserve|book) a room"' +
+				'\n- "Awesome! Do you have a date range you\'re thinking of?"' +
+				'\n- "And what dates are you looking to book?"' +
+				'\n- "Okay! When would your stay be?"' +
+				'\n- "Can I get the dates you\'re looking to book?"' +
+				'\n- "What are the beginning and end dates of your stay?"' +
+				'\n- "Can do! What dates are you looking to book?"' +
+				'\n\n+ "* like a room *"' +
+				'\n- "Awesome! Do you have a date range you\'re thinking of?"' +
+				'\n- "And what dates are you looking to book?"' +
+				'\n- "Okay! When would your stay be?"' +
+				'\n- "Can I get the dates you\'re looking to book?"' +
 				'\n- "What are the beginning and end dates of your stay?"' +
 				'\n- "Can do! What dates are you looking to book?"' +
 				'\n\n+ "* (book|make) reservation"' +
@@ -320,13 +343,16 @@ export default {
 				'\n\n+ "* (type|kind|style) of (room|unit)"' +
 				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
 				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
+				'\n\n+ "* (types|types of rooms|kinds|styles) are (there|available)"' +
+				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
+				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
 				'\n\n+ "dateAvail xx01"' +
 				'\n- "I\'m sorry, there are no available rooms for those dates."' +
 				'\n- "I\'m sorry, we\'re all booked those dates."' +
-				'\n- "There are no rooms available for those dates, are there any other datet that will work for you?"' +
+				'\n- "There are no rooms available for those dates, are there any other dates that will work for you?"' +
 				'\n- "There are no rooms available for those dates, I\'m sorry!"' +
 				'\n\n+ "dateAvail xx02"' +
-				'\n- "We have some rooms available, what type were you looking to book?"' +
+				'\n- "We have some rooms available, what room type were you looking to book?"' +
 				'\n- "Alright, we have some rooms available. What kind of room are you looking for?"' +
 				'\n\n+ "dateAvail xx03"' +
 				'\n- "Its available! I\'ll put you down for that."' +
@@ -368,8 +394,9 @@ export default {
 				'\n\n+ "(goodbye|bye|see ya|cancel|exit)"' +
 				'\n- "cancel:  reset flags"' +
 				'\n\n+ "leavingMsg xx01"' +
-				'\n- "Goodbye. Come back soon!"' +
+				'\n- "Goodbye then. Come back soon!"' +
 				'\n- "Bye now. Have a nice day!"' +
+				'\n- "Alrighty. Have a nice day!"' +
 				'\n- "Thank you for visiting. Hope we see you soon!"' +
 				'\n- "Thanks for visiting The Bird Bath. Have a great day!"' +
 				'\n\n+ "* (change|switch|swap) the room"' +
@@ -389,7 +416,6 @@ export default {
 				'\n- "When would you like to reschedule your reservation?"' +
 				'\n- "Okay, so what days would you like to schedule instead?"' +
 				'\n\n+ "askForResponse xx01"' +
-				'\n- "Okay?"' +
 				'\n- "Does this sound like a plan to you?"' +
 				'\n- "Is this okay?"' +
 				'\n- "Does this work for you?"' +
@@ -404,12 +430,29 @@ export default {
 				'\n- "Can you tell me which room you would like?"' +
 				'\n\n+ "generalResponse xx01"' +
 				'\n- "Okay, you are all set. Thank you for choosing The Bird Bath! See you soon!"' +
-				'\n- "Great! Thank you for choosing The Bird Bath!"' +
-				'\n- "Everything sems to be in order. You\'re reservation is complete. Thank you and have a great rest of you\'re day!"' +
+				'\n- "Great, you\'re good to go! Thank you for choosing The Bird Bath."' +
+				'\n- "Everything sems to be in order. Your reservation is complete. Thank you and have a great rest of your day!"' +
 				'\n\n+ "(yes|yep|that works|sounds good|confirm)"' +
-				'\n- "Alright!"' +
+				'\n- "generalConfirm: Alright!"' +
+				'\n- "generalConfirm: Great!"' +
 				'\n\n+ "(no|nope|no thank you| no thanks)"' +
-				'\n- "We can work this out, how can I help you?"';
+				'\n- "generalNo: We can work this out, is there a way I can help you?"' +
+				'\n- "generalNo: Is there any details you would like to change then?"' +
+				'\n\n+ "generalNo xx01"' +
+				'\n- "Ok, is there a different type of room you\'re interested in?"' +
+				'\n- "Ok, are you interested in a different type of room?"' +
+				'\n- "Would you like a room at a different price? Our prices are 1-bed: 25€, 2-bed: 50€, Suite: 100€"' +
+				'\n\n+ "generalNo xx02"' +
+				'\n- "What about a different date you\'re interested in?"' +
+				'\n- "Are you perhaps interested in a different date range?"' +
+				'\n\n+ "you can\'t"' +
+				'\n- "cancel: Alrighty. Have a nice day!"' +
+				'\n\n+ "(Hello?|Hi|Hey)"' +
+				'\n- "Hi! How can I help you?"' +
+				'\n- "Hello"' +
+				'\n- "Hello, what can I help you with?"' +
+				'\n\n+ "xx status"' +
+				'\n- "status: status"';
 
 			// Init and return the bot with the script
 			const bot = new Botlang(scriptString);
