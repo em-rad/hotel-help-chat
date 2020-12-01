@@ -22,7 +22,7 @@
 
 #nav {
 	padding: 30px;
-	border-bottom: 8px double #b8a57f;
+	border-bottom: 8px double #957d95;
 	width: 101%;
 	a {
 		font-weight: bold;
@@ -32,7 +32,7 @@
 		word-spacing: 10px;
 
 		&.router-link-exact-active {
-			color: #b8a57f;
+			color: #957d95;
 		}
 	}
 	img {

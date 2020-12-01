@@ -2,6 +2,10 @@
 	<div class="home">
 		<h1>The Bird Bath</h1>
 		<h2>Hang with the birds</h2>
+		<p class="covid">
+			To help protect the health and safety of guests, employees, and visitors, we require the use of face coverings in all hotel public areas.<br />
+			COVID-19 updates: Learn about our <span style="text-decoration: underline">booking policy</span> and health and <span style="text-decoration: underline">safety protocols</span>
+		</p>
 		<p>
 			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla luctus lacus sem, eget semper tortor pellentesque non. In vitae volutpat neque. Etiam condimentum laoreet lacus non laoreet. Etiam
 			sagittis gravida lacus in imperdiet. Ut nulla nisi, imperdiet et lobortis ut, vestibulum et tortor. Integer ac euismod nulla. Suspendisse posuere diam eget erat sagittis, ut tincidunt mi
@@ -430,8 +434,8 @@ html {
 	}
 }
 h1 {
-	padding-top: 1em;
-	font-size: 72pt;
+	padding-top: 40px;
+	font-size: 84pt;
 	color: #0b2027;
 	font-family: 'Dancing Script', cursive;
 	margin: 0px;
@@ -440,7 +444,7 @@ h2 {
 	font-size: 48pt;
 	color: #0b2027;
 	font-family: 'Dancing Script', cursive;
-	margin: 0 0 1em 0;
+	margin: 0 0 0.5em 0;
 }
 p {
 	margin: 0 2em 3em 2em;
@@ -464,6 +468,7 @@ p {
 }
 .home {
 	background-image: url('../../public/foggy_birds.png');
+	margin: 0px 40px;
 }
 .hotel-room-images {
 	width: 400px;
@@ -635,5 +640,14 @@ p {
 	border: 2px solid #40798c;
 	border-radius: 30px;
 	background: white;
+}
+.covid {
+	margin: auto auto;
+	padding: 0px 0px 60px 0px;
+	font-size: 10pt;
+	color: red;
+	text-align: center;
+	width: 60%;
+	font-weight: bold;
 }
 </style>
