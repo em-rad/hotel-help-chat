@@ -111,7 +111,7 @@ export default {
 			}
 
 			// YES / NO CHECK
-			const confirmFormat = ['yes', 'no', 'confirm', 'that works', 'yep', 'sure', 'sounds good', 'yeah', 'no thank you', 'no thanks', 'nope', 'nevermind'];
+			const confirmFormat = ['yes', 'no', 'ok', 'okay', 'confirm', 'that works', 'yep', 'sure', 'sounds good', 'yeah', 'no thank you', 'no thanks', 'nope', 'nevermind'];
 			const msgCheck = msg.toLowerCase();
 			confirmFormat.forEach((word) => {
 				if (msgCheck.indexOf(word) > -1) {
@@ -172,7 +172,7 @@ export default {
 			switch (msgType) {
 				case 'dateConfirm':
 					// Important!! Do a check or some kind of random function for if there are rooms available for those dates
-					if (dateAvailable <= 5) {
+					if (dateAvailable <= 3) {
 						// If dates not available, prompt again
 						this.sendResponseMessage(bot.reply('dateAvail xx01'));
 					} else if (this.roomTypeSelectedFlag) {
@@ -257,7 +257,6 @@ export default {
 				'\n- "I\'m not sure I understand you fully."' +
 				'\n- "I\'m sorry, I don\'t understand."' +
 				'\n- "Could you rephrase that? I\'m having trouble understanding."' +
-				'\n- "I\'m sorry, but I am unable to answer that."' +
 				'\n\n+ "(Hello?|Hi|Hey)"' +
 				'\n- "Hi! How can I help you?"' +
 				'\n- "Hello"' +
@@ -267,9 +266,17 @@ export default {
 				'\n- "I\'m doing well, how about you?"' +
 				'\n- "I\'m doing good, how are you?"' +
 				'\n- "I\'m fantastic! How are you?"' +
-				'\n\n+ "What is your name?"' +
-				'\n- "My name is Birdie! What\'s yours?"' +
-				'\n- "My name is Birdie, what\'s your name?"' +
+				'\n\n+ "How are you?"' +
+				'\n- "I\'m doing well, thank you!"' +
+				'\n- "I\'m doing well, how about you?"' +
+				'\n- "I\'m doing good, how are you?"' +
+				'\n- "I\'m fantastic! How are you?"' +
+				'\n\n+ "I\'m doing (well|good|fine|alright|okay|ok) *"' +
+				'\n- "Good to hear!"' +
+				'\n\n+ "I\'m (well|good|fine|alright|okay|ok) *"' +
+				'\n- "Good to hear!"' +
+				'\n\n+ "I\'m doing (bad|not good|terrible|) *"' +
+				'\n- "Oh no! How can I help you?"' +
 				'\n\n+ "My name is $"' +
 				'\n- "Nice to meet you $!"' +
 				'\n\n+ "Nice to meet you"' +
@@ -411,6 +418,17 @@ export default {
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+html {
+	::-webkit-scrollbar {
+		width: 0px; /* Remove scrollbar space */
+		background: transparent; /* Optional: just make scrollbar invisible */
+	}
+	/* Optional: show position indicator in red */
+	::-webkit-scrollbar-thumb {
+		background: #ff0000;
+	}
+}
 h1 {
 	padding-top: 1em;
 	font-size: 72pt;
@@ -477,17 +495,24 @@ p {
 	position: fixed;
 	bottom: 0;
 	right: 15px;
-	border: 3px solid #f1f1f1;
+	border: 3px solid #40798c;
+	border-radius: 15px;
 	z-index: 9;
 }
 /* Add styles to the form container */
 .form-container {
 	max-width: 450px;
-	padding: 10px;
+	padding: 15px;
 	background-color: white;
+	border-radius: 10px;
 }
 .chats {
 	height: 350px;
+	border: 2px solid #40798c;
+	border-radius: 5px;
+	padding: 5px;
+	margin-top: 10px;
+	background-color: white;
 }
 .send-container {
 	display: flex;
@@ -495,19 +520,21 @@ p {
 }
 /* Full-width textarea */
 .form-container textarea {
-	width: 300px;
+	width: 350px;
 	padding: 10px;
 	margin-right: 10px;
+	margin-top: 10px;
 	border: none;
 	background: #f1f1f1;
 	resize: none;
 	display: inline;
 	font-size: 12pt;
-}
-/* When the textarea gets focus, do something */
-.form-container textarea:focus {
-	background-color: #ddd;
-	outline: none;
+	border-radius: 5px;
+
+	&:focus {
+		background-color: #e6e4e4;
+		outline: none;
+	}
 }
 .cancel-button {
 	background-color: white;
@@ -521,7 +548,7 @@ p {
 	cursor: pointer;
 }
 .send-button {
-	background-color: #4caf50;
+	background-color: #4ebc70;
 	color: white;
 	padding: 10px;
 	border: none;
@@ -530,9 +557,18 @@ p {
 	width: 60px;
 	opacity: 0.8;
 	display: inline;
+	border-radius: 10px;
+	font-weight: bold;
+	text-shadow: 1px 1px 2px black;
+	letter-spacing: 1px;
 }
 .chat-title {
 	display: inline;
+	margin: 20px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 16pt;
+	color: #40798c;
+	text-shadow: 1px 1px 3px #dedede;
 }
 // MESSAGE CSS - make these able to stretch if longer message?
 /* Chat containers */
@@ -542,9 +578,11 @@ p {
 	padding: 10px;
 	margin: 10px 0;
 	min-height: 2.5em;
+	box-shadow: 1px 1px 3px #dedede;
 }
 .darker {
 	border-color: #957d959a;
+	background-color: #957d9525;
 }
 
 .message {
@@ -596,5 +634,6 @@ p {
 	width: 25px;
 	border: 2px solid #40798c;
 	border-radius: 30px;
+	background: white;
 }
 </style>
