@@ -242,6 +242,9 @@ export default {
 					this.resetEverything();
 					this.sendResponseMessage(bot.reply('leavingMsg xx01'));
 					break;
+				case 'status':
+					this.sendResponseMessage('Date flag: ' + this.datesSelectedFlag + '\nRoom type flag: ' + this.roomTypeSelectedFlag)
+					break;
 				default:
 					// Return the parsed message the bot gave out
 					console.log('default');
@@ -261,10 +264,6 @@ export default {
 				'\n- "I\'m not sure I understand you fully."' +
 				'\n- "I\'m sorry, I don\'t understand."' +
 				'\n- "Could you rephrase that? I\'m having trouble understanding."' +
-				'\n\n+ "(Hello?|Hi|Hey)"' +
-				'\n- "Hi! How can I help you?"' +
-				'\n- "Hello"' +
-				'\n- "Hello, what can I help you with?"' +
 				'\n\n+ "How are you?"' +
 				'\n- "I\'m doing well, thank you!"' +
 				'\n- "I\'m doing well, how about you?"' +
@@ -305,7 +304,7 @@ export default {
 				'\n- "Our email is theBirdBath@email.com and phone number is (132) 213 - 1231."' +
 				'\n- "Our company email is theBirdBath@email.com and company number is (132) 213 - 1231. How else can I help you?"' +
 				'\n\n+ "* (book|reservation) *"' +
-				'\n- "Do you have a date range?"' +
+				'\n- "Awesome! Do you have a date range?"' +
 				'\n- "And what dates are you looking to book?"' +
 				'\n- "Okay! When would your stay be?"' +
 				'\n- "Can I get the dates You\'re looking to book?"' +
@@ -320,13 +319,16 @@ export default {
 				'\n\n+ "* (type|kind|style) of (room|unit)"' +
 				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
 				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
+				'\n\n+ "* (types|kinds|styles) are (there|available)"' +
+				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
+				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
 				'\n\n+ "dateAvail xx01"' +
 				'\n- "I\'m sorry, there are no available rooms for those dates."' +
 				'\n- "I\'m sorry, we\'re all booked those dates."' +
 				'\n- "There are no rooms available for those dates, are there any other datet that will work for you?"' +
 				'\n- "There are no rooms available for those dates, I\'m sorry!"' +
 				'\n\n+ "dateAvail xx02"' +
-				'\n- "We have some rooms available, what type were you looking to book?"' +
+				'\n- "We have some rooms available, what room type were you looking to book?"' +
 				'\n- "Alright, we have some rooms available. What kind of room are you looking for?"' +
 				'\n\n+ "dateAvail xx03"' +
 				'\n- "Its available! I\'ll put you down for that."' +
@@ -389,7 +391,6 @@ export default {
 				'\n- "When would you like to reschedule your reservation?"' +
 				'\n- "Okay, so what days would you like to schedule instead?"' +
 				'\n\n+ "askForResponse xx01"' +
-				'\n- "Okay?"' +
 				'\n- "Does this sound like a plan to you?"' +
 				'\n- "Is this okay?"' +
 				'\n- "Does this work for you?"' +
@@ -409,7 +410,13 @@ export default {
 				'\n\n+ "(yes|yep|that works|sounds good|confirm)"' +
 				'\n- "Alright!"' +
 				'\n\n+ "(no|nope|no thank you| no thanks)"' +
-				'\n- "We can work this out, how can I help you?"';
+				'\n- "We can work this out, how can I help you?"' + 
+				'\n\n+ "(Hello?|Hi|Hey)"' +
+				'\n- "Hi! How can I help you?"' +
+				'\n- "Hello"' +
+				'\n- "Hello, what can I help you with?"' + 
+				'\n\n+ "status"' +
+				'\n- "status: status"';
 
 			// Init and return the bot with the script
 			const bot = new Botlang(scriptString);
