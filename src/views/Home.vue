@@ -108,8 +108,7 @@ export default {
 			let msgType = '';
 
 			// First scrub the input to replace the dashes
-			msg = msg.replace("1-bed", "1 bed")
-			msg = msg.replace("2-bed", "2 bed")
+			msg = this.scrubMessage(msg)
 
 			// Get the bot's suggested response and parse it out
 			const botResponse = bot.reply(msg);
@@ -146,26 +145,32 @@ export default {
 					break;
 				case 'suiteConfirm':
 					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+						// The suite is not available, so prompt again
 						this.sendResponseMessage(bot.reply('suiteAvail xx01'));
 					} else {
+						// The suite is available, so continue on
 						this.roomTypeSelectedFlag = true;
 						this.sendResponseMessage(bot.reply('suiteAvail xx02'));
 						this.sendResponseMessage(bot.reply('askForResponse xx01'));
 					}
 					break;
 				case 'twoConfirm':
-					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+					// The 2-bed is not available, so prompt again
+					if (roomAvailable <= 4 && this.datesSelectedFlag === true) {
 						this.sendResponseMessage(bot.reply('twoAvail xx01'));
 					} else {
+						// The 2-bed is available, so continue on
 						this.roomTypeSelectedFlag = true;
 						this.sendResponseMessage(bot.reply('twoAvail xx02'));
 						this.sendResponseMessage(bot.reply('askForResponse xx01'));
 					}
 					break;
 				case 'oneConfirm':
-					if (roomAvailable <= 5 && this.datesSelectedFlag === true) {
+					// The 1-bed is not available, so prompt again
+					if (roomAvailable <= 2 && this.datesSelectedFlag === true) {
 						this.sendResponseMessage(bot.reply('oneAvail xx01'));
 					} else {
+						// The 1-bed is available, so continue on
 						this.roomTypeSelectedFlag = true;
 						this.sendResponseMessage(bot.reply('oneAvail xx02'));
 						this.sendResponseMessage(bot.reply('askForResponse xx01'));
@@ -179,15 +184,16 @@ export default {
 						this.sendResponseMessage(bot.reply('generalResponse xx01'));
 						this.resetEverything()
 					} else if (this.datesSelectedFlag === true && this.roomTypeSelectedFlag === false) {
-						// If only date, ask for room type
+						// If only date, prompt for room type
 						this.sendResponseMessage(bot.reply('generalResponse xx02'));
 					} else {
-						// If none or only room type, ask for date
+						// If none or only room type, prompt for date
 						this.sendResponseMessage(bot.reply('generalResponse xx03'));
 					}
 					break;
 				case 'generalNo':
-					// If the user isn't happy with the confirmation, gradually go back and reset a flag every time
+					// If the user isn't happy with the confirmation, gradually go backwards
+					// through the stages, resetting a flag every time
 					if (this.roomTypeSelectedFlag && this.datesSelectedFlag) {
 						// Not happy with total confirmation, so prompt different room type
 						this.sendResponseMessage(bot.reply('generalNo xx01'));
@@ -202,15 +208,16 @@ export default {
 					}
 					break;
 				case 'cancel':
-					// Return an appropriate goodbye message and reset (resetEverything function)
+					// Return an appropriate goodbye message and reset the flags
 					this.resetEverything();
 					this.sendResponseMessage(bot.reply('leavingMsg xx01'));
 					break;
+				// Status message is for development only
 				case 'status':
 					this.sendResponseMessage('Date flag: ' + this.datesSelectedFlag + '\nRoom type flag: ' + this.roomTypeSelectedFlag)
 					break;
 				default:
-					// Return the parsed message the bot gave out
+					// If no processing needs to be done, return the parsed message the bot gave out
 					console.log('default');
 					this.sendResponseMessage(botResponse);
 					break;
@@ -253,7 +260,7 @@ export default {
 			}
 
 			// Set the msgType based on the findings
-			if (isDate) {
+			if (isDate || msg.includes("202")) {
 				msgType = 'dateConfirm';
 			} else if (isOneRoom) {
 				msgType = 'oneConfirm';
@@ -266,8 +273,17 @@ export default {
 			this.datesSelectedFlag = false;
 			this.roomTypeSelectedFlag = false;
 		},
+		scrubMessage(msg){
+			msg = msg.replace("1-bed", "1 bed")
+			msg = msg.replace("2-bed", "2 bed")
+			msg = msg.replace("Hello,", " ")
+			msg = msg.replace("Hi,", " ")
+			msg = msg.replace("Hey,", " ")
+			return msg
+		},
 		initBot: function() {
-			// Using a string literal for the script as a last ditch resort
+			// Ideally a file reader function would be used and this would all be in a text file,
+			// but using a string literal for the script as a last ditch resort
 			const scriptString =
 				'# Botlang Script' +
 				'\n+ "*"' +
@@ -320,7 +336,7 @@ export default {
 				'\n- "Can I get the dates you\'re looking to book?"' +
 				'\n- "What are the beginning and end dates of your stay?"' +
 				'\n- "Can do! What dates are you looking to book?"' +
-				'\n\n+ "* (reserve|book) a room"' +
+				'\n\n+ "* (reserve|book|get|like|get me|have) a room"' +
 				'\n- "Awesome! Do you have a date range you\'re thinking of?"' +
 				'\n- "And what dates are you looking to book?"' +
 				'\n- "Okay! When would your stay be?"' +
@@ -341,11 +357,11 @@ export default {
 				'\n- "Awesome! When are you thinking about booking?"' +
 				'\n- "Ok what dates are you looking to book?"' +
 				'\n\n+ "* (type|kind|style) of (room|unit)"' +
-				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
+				'\n- "Our room options are a one bed, two bed, and a suite. Availability varies on the date!"' +
 				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
-				'\n\n+ "* (types|types of rooms|kinds|styles) are (there|available)"' +
-				'\n- "Our room options are a one bed, two bed, and a suite. Availablity varies on the date!"' +
-				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condiition!"' +
+				'\n\n+ "* (types|types of rooms|kinds|styles|rooms) are (there|available)"' +
+				'\n- "Our room options are a one bed, two bed, and a suite. Availability varies on the date!"' +
+				'\n- "Depending on the time and day, we have a one bed, two bed, and a suite available. All of which are in top quality condition!"' +
 				'\n\n+ "dateAvail xx01"' +
 				'\n- "I\'m sorry, there are no available rooms for those dates."' +
 				'\n- "I\'m sorry, we\'re all booked those dates."' +
